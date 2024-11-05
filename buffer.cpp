@@ -21,12 +21,12 @@ void Buffer::EnsureWriteSpace(uint64_t len)
     {
         return;
     }
-    if (len <= WriteAbleSize() + FreeSpaceBeforeRead())
+    if (len <= WriteAbleSize() + FreeSpaceBeforeRead()) // 如果只考虑末尾空间不够,就再加上前边的空闲空间
     {
-        uint64_t len = ReadAbleSize();                 // 把当前数据大小先保存起来
-        copy(ReadIndex(), ReadIndex() + len, Begin()); // 把可读数据拷贝到起始位置
-        read_index = 0;                                // 将读偏移归0
-        write_index = len;                             // 将写位置置为可读数据大小， 因为当前的可读数据大小就是写偏移量
+        uint64_t len = ReadAbleSize();
+        copy(ReadIndex(), ReadIndex() + len, Begin());
+        read_index = 0;
+        write_index = len;
     }
     else
     {

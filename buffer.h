@@ -29,7 +29,7 @@ public:
     // 计算剩余空间
     uint64_t WriteAbleSize() { return buf.size() - write_index; }
 
-    // 获取缓冲区起始空闲空间大小--读偏移之前的空闲空间
+    // 获取缓冲区起始空闲空间大小
     uint64_t FreeSpaceBeforeRead() { return read_index; }
 
     // 计算可读数据
@@ -41,10 +41,10 @@ public:
     // 将写偏移向后移动
     void MoveWriteOffset(uint64_t len);
 
-    // 确保可写空间足够（整体空闲空间够了就移动数据，否则就扩容）
+    // 确保写指针之后的可写空间足够
     void EnsureWriteSpace(uint64_t len);
     
-    // 写入数据
+    // 写数据
     void Write(const void *data, uint64_t len);
     
     void WriteAndPush(const void *data, uint64_t len);
@@ -57,7 +57,7 @@ public:
 
     void WriteBufferAndPush(Buffer &data);
 
-    // 读取数据
+    // 读数据
     void Read(void *buf, uint64_t len);
 
     void ReadAndPop(void *buf, uint64_t len);
