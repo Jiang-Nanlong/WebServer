@@ -5,6 +5,7 @@
 #include <cassert>
 #include <string>
 #include <cstring>
+#include <stdint.h>
 using namespace std;
 
 #define BUFFER_DEFAULT_SIZE 1024
