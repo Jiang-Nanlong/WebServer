@@ -1,3 +1,5 @@
+#pragma once
+
 #include <sys/socket.h>
 #include <string>
 #include <netinet/in.h>
@@ -7,7 +9,7 @@
 #include <fcntl.h>
 using namespace std;
 
-#define LISTEN_NUM 10
+#define LISTEN_NUM 1024
 
 class Socket
 {
@@ -42,15 +44,19 @@ public:
 
     void Close();
 
+    //设置套接字开启地址端口重用
+    void ReuseAddress();
+    
+    //设置套接字为非阻塞
+    void SetNonBlock();
+    
+    //感觉上边这段可以设为私有成员函数
+
     // 当前sockfd是服务端套接字
     bool CreateServer(const string& ip = "0.0.0.0", uint16_t port, bool block_flag = false);
 
     // 当前sockfd是客户端套接字
     bool CreateClient(const string& ip, uint16_t port);
 
-    //设置套接字开启地址端口重用
-    void ReuseAddress();
-    
-    //设置套接字为非阻塞
-    void NonBlock();
+
 };

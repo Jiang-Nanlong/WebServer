@@ -1,7 +1,5 @@
 #include "Socket.h"
 
-
-
 bool Socket::Create() {
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0) {
@@ -19,6 +17,7 @@ bool Socket::Bind(const string& ip, uint16_t port) {
     addr.sin_port = htons(port);
     if (bind(sockfd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
         // 日志
+        Close();
         return false;
     }
     return true;
@@ -37,9 +36,9 @@ bool Socket::Connect(const string& ip, uint16_t port) {
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = inet_addr(ip.c_str());
     addr.sin_port = htons(port);
-    if (connect(sockfd, (struct sockaddr*)&addr, sizeof(addr)) < 0)
+    if (connect(sockfd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
         return false;
-
+    }
     return true;
 }
 
@@ -86,9 +85,21 @@ void Socket::Close() {
     }
 }
 
+void Socket::ReuseAddress() {
+    int opt = 1;
+    setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (void*)&opt, sizeof(int));  // 关闭time-wait
+    opt = 1;    //SO_REUSEPORT ：设置端口号重用
+    setsockopt(sockfd, SOL_SOCKET, SO_REUSEPORT, (void*)&opt, sizeof(int));
+}
+
+void Socket::SetNonBlock() {
+    int flag = fcntl(sockfd, F_GETFL);
+    fcntl(sockfd, F_SETFL, flag | O_NONBLOCK);
+}
+
 bool Socket::CreateServer(const string& ip, uint16_t port, bool block_flag) {
     if (Create() == false) return false;
-    if (block_flag) NonBlock();
+    if (block_flag) SetNonBlock();
     if (Bind(ip, port) == false) return false;
     if (Listen() == false) return false;
     ReuseAddress();
@@ -99,16 +110,4 @@ bool Socket::CreateClient(const string& ip, uint16_t port) {
     if (Create() == false) return false;
     if (Connect(ip, port) == false) return false;
     return true;
-}
-
-void Socket::ReuseAddress() {
-    int opt = 1;
-    setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (void*)&opt, sizeof(int));  // 关闭time-wait
-    opt = 1;    //SO_REUSEPORT ：设置端口号重用
-    setsockopt(sockfd, SOL_SOCKET, SO_REUSEPORT, (void*)&opt, sizeof(int));
-}
-
-void Socket::NonBlock() {
-    int flag = fcntl(sockfd, F_GETFL);
-    fcntl(sockfd, F_SETFL, flag | O_NONBLOCK);
 }
