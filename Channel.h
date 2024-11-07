@@ -12,7 +12,7 @@ private:
     int fd;
     bool InEpoll = false;   // 是否已经加入到epoll例程中
     uint32_t events = 0;    // 文件描述符fd想要监听的事件
-    uint32_t revents = 0;   // 文件描述符fd已经监听的事件
+    uint32_t revents = 0;   // Poller返回的具体发生的事件
 
     using EventCallback = function <void()>;
     EventCallback _read_callback;

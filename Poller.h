@@ -4,11 +4,12 @@
 #include <vector>
 #include "Channel.h"
 #include <cstring>
+#include <unistd.h>
 using namespace std;
 
 #define MAX_EVENTS 1024
 
-// Poller模块采用来真正调用epoll监听事件
+// Poller模块用来监听事件
 
 class Poller {
 private:
@@ -21,6 +22,10 @@ public:
         if (epollfd < 0) {
             exit(1);
         }
+    }
+
+    ~Poller() {
+        close(epollfd);
     }
 
     void UpdateChannel(Channel* ch, int op);   // 向epoll例程中添加，修改或删除要监听的文件描述符及其属性

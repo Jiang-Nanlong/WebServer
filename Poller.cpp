@@ -17,7 +17,7 @@ void Poller::UpdateChannel(Channel* ch, int op) {
     }
     else if (op == EPOLL_CTL_DEL) {
         if (ch->GetInEpoll() == true) {
-            if (epoll_ctl(epollfd, op, fd, &event) < 0) {
+            if (epoll_ctl(epollfd, op, fd, nullptr) < 0) {
                 // 日志
                 return;
             }

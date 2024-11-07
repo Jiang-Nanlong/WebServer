@@ -50,7 +50,9 @@ void Channel::SetEventCallback(EventCallback fn) {
 }
 
 void Channel::HandleEvent() {
-    if (revents & EPOLLIN | revents & EPOLLRDHUP | revents & EPOLLPRI)
+    if (revents & EPOLLHUP && !(revents & EPOLLIN))
+        _close_callback();
+    else if (revents & (EPOLLIN | EPOLLRDHUP | EPOLLPRI))
         _read_callback();
     else if (revents & EPOLLOUT)
         _write_callback();
@@ -58,8 +60,5 @@ void Channel::HandleEvent() {
         _error_callback();
         return;
     }
-    else if (revents & EPOLLHUP)
-        _close_callback();
-
     _event_callback();
 }
