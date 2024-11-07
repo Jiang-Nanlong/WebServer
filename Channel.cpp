@@ -29,7 +29,37 @@ void Channel::SetRevents(uint32_t event) {
     revents = event;
 }
 
-void Channel::HandleEvent() {
+void Channel::SetReadCallback(EventCallback fn) {
+    _read_callback = fn;
 }
 
+void Channel::SetWriteCallback(EventCallback fn) {
+    _write_callback = fn;
+}
 
+void Channel::SetErrorCallback(EventCallback fn) {
+    _error_callback = fn;
+}
+
+void Channel::SetCloseCallback(EventCallback fn) {
+    _close_callback = fn;
+}
+
+void Channel::SetEventCallback(EventCallback fn) {
+    _event_callback = fn;
+}
+
+void Channel::HandleEvent() {
+    if (revents & EPOLLIN | revents & EPOLLRDHUP | revents & EPOLLPRI)
+        _read_callback();
+    else if (revents & EPOLLOUT)
+        _write_callback();
+    else if (revents & EPOLLERR) {
+        _error_callback();
+        return;
+    }
+    else if (revents & EPOLLHUP)
+        _close_callback();
+
+    _event_callback();
+}
