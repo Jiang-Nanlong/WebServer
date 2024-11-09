@@ -13,20 +13,32 @@ bool Channel::GetInEpoll()
     return InEpoll;
 }
 
+void Channel::Update() {
+    lp->ModifyChannel(this);
+}
+
+void Channel::enableReading() { events |= EPOLLIN; Update(); }
+
+void Channel::disableReading() { events &= ~EPOLLIN; Update(); }
+
+void Channel::enableWriting() { events |= EPOLLOUT; Update(); }
+
+void Channel::disableWriting() { events &= ~EPOLLOUT; Update(); }
+
+void Channel::disableAll() { events = 0; Update(); }
+
 uint32_t Channel::GetEvents() {
     return events;
 }
 
+/*
 void Channel::SetEvents(uint32_t event) {
     events |= event;
 }
+*/
 
 uint32_t Channel::GetRevents() {
     return revents;
-}
-
-void Channel::SetRevents(uint32_t event) {
-    revents = event;
 }
 
 void Channel::SetReadCallback(EventCallback fn) {

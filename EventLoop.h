@@ -8,6 +8,7 @@
 #include <mutex>
 #include <memory>
 #include <sys/eventfd.h>
+#include "Log.h"
 
 using namespace std;
 
@@ -18,7 +19,7 @@ private:
     int WakeUpFd;    // 
     shared_ptr<Channel> WakeUpFdChannel;
     using Functor = function<void()>;
-    vector<Functor> Tasks;
+    vector<Functor> pendingFunctors;
     mutex mtx;
 
     bool isLooping;
@@ -33,7 +34,7 @@ private:
         return fd;
     }
 
-    void ProcessTasks();
+    void dopendingFunctors();
 public:
     EventLoop();
 
@@ -46,6 +47,12 @@ public:
     void RunInLoop(const TaskFunc& task);
 
     void QueueInLoop(const TaskFunc& task);
+
+    void AddChannel(Channel* ch);
+
+    void ModifyChannel(Channel* ch);
+
+    void RemoveChannel(Channel* ch);
 
     void loop();
 };

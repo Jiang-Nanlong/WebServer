@@ -7,6 +7,7 @@
 #include <memory.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include "Log.h"
 using namespace std;
 
 #define LISTEN_NUM 1024
@@ -24,7 +25,7 @@ public:
 
     int GetFd() { return sockfd; }
 
-    bool Create() ;
+    bool Create();
 
     bool Bind(const string& ip, uint16_t port);
 
@@ -46,10 +47,10 @@ public:
 
     //设置套接字开启地址端口重用
     void ReuseAddress();
-    
+
     //设置套接字为非阻塞
     void SetNonBlock();
-    
+
     //感觉上边这段可以设为私有成员函数
 
     // 当前sockfd是服务端套接字

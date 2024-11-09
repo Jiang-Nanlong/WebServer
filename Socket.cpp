@@ -3,7 +3,7 @@
 bool Socket::Create() {
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0) {
-        // 此处应该有日志
+        LOG(ERROR, "creat socket failed");
         return false;
     }
     return true;
@@ -16,7 +16,7 @@ bool Socket::Bind(const string& ip, uint16_t port) {
     addr.sin_addr.s_addr = inet_addr(ip.c_str());
     addr.sin_port = htons(port);
     if (bind(sockfd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
-        // 日志
+        LOG(ERROR, "socket bind failed");
         Close();
         return false;
     }
@@ -25,6 +25,7 @@ bool Socket::Bind(const string& ip, uint16_t port) {
 
 bool Socket::Listen(int num) {
     if (listen(sockfd, num) < 0) {
+        LOG(ERROR, "socket listen failed");
         return false;
     }
     return true;
@@ -37,6 +38,7 @@ bool Socket::Connect(const string& ip, uint16_t port) {
     addr.sin_addr.s_addr = inet_addr(ip.c_str());
     addr.sin_port = htons(port);
     if (connect(sockfd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
+        LOG(ERROR, "socket connect failed");
         return false;
     }
     return true;
@@ -44,19 +46,22 @@ bool Socket::Connect(const string& ip, uint16_t port) {
 
 int Socket::Accept() {
     int clnt_sock = accept(sockfd, nullptr, nullptr);
-    if (clnt_sock < 0)
+    if (clnt_sock < 0) {
+        LOG(ERROR, "socket accept failed");
         return -1;
+    }
     return clnt_sock;
 }
 
 ssize_t Socket::Recv(void* buf, size_t len, int flag) {
-    ssize_t str_len = recv(sockfd, buf, len, flag);
-    if (str_len <= 0) {
+    ssize_t len = recv(sockfd, buf, len, flag);
+    if (len <= 0) {
         if (errno == EAGAIN || errno == EINTR)
             return 0;
+        LOG(ERROR, "socket receive failed");
         return -1;
     }
-    return str_len;
+    return len;
 }
 
 ssize_t Socket::NonBlockRecv(void* buf, size_t len) {
@@ -64,13 +69,14 @@ ssize_t Socket::NonBlockRecv(void* buf, size_t len) {
 }
 
 ssize_t Socket::Send(void* buf, size_t len, int flag) {
-    ssize_t str_len = send(sockfd, buf, len, flag);
-    if (str_len <= 0) {
+    ssize_t len = send(sockfd, buf, len, flag);
+    if (len <= 0) {
         if (errno == EAGAIN || errno == EINTR)
             return 0;
+        LOG(ERROR, "socket send failed");
         return -1;
     }
-    return str_len;
+    return len;
 }
 
 ssize_t Socket::NonBlockSend(void* buf, size_t len) {

@@ -5,6 +5,7 @@
 #include "Channel.h"
 #include <cstring>
 #include <unistd.h>
+#include "Log.h"
 using namespace std;
 
 #define MAX_EVENTS 1024
@@ -20,6 +21,7 @@ public:
     Poller() {
         epollfd = epoll_create(1);
         if (epollfd < 0) {
+            LOG(ERROR, "create epoll instance failed");
             exit(1);
         }
     }
@@ -28,7 +30,7 @@ public:
         close(epollfd);
     }
 
-    void UpdateChannel(Channel* ch, int op);   // 向epoll例程中添加，修改或删除要监听的文件描述符及其属性
+    void UpdateChannel(Channel* ch, int op);
 
-    vector<Channel*> Poll();    // 开始监听注册在epoll例程上的事件
+    void Poll(vector<Channel*>& ChannelList);
 };

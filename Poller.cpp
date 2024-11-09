@@ -34,20 +34,22 @@ void Poller::UpdateChannel(Channel* ch, int op) {
     }
 }
 
-vector<Channel*> Poller::Poll() {
+void Poller::Poll(vector<Channel*>& ChannelList) {
     memset(evs, 0, sizeof(epoll_event) * MAX_EVENTS);
     int nfds = epoll_wait(epollfd, evs, MAX_EVENTS, -1);
-    if (nfds < 1) {
+    if (nfds < 0) {
+        if (errno == EINTR) {
+            LOG(INFO, "epoll wait EINTR");
+            return;
+        }
+        LOG(ERROR, "epoll wait failed: %s", strerror(errno));
         exit(1);
     }
-
-    vector<Channel*> res;
     for (int i = 0;i < nfds;++i) {
         Channel* ch = (Channel*)evs[i].data.ptr;
         if (ch->GetInEpoll()) {
             ch->SetRevents(evs[i].events);
-            res.push_back(ch);
+            ChannelList.push_back(ch);
         }
     }
-    return res;
 }
