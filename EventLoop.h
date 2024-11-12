@@ -42,7 +42,6 @@ public:
 
     void QueueInLoop(const TaskFunc& task);
 
-
     void UpdateChannel(Channel* ch);
 
     void RemoveChannel(Channel* ch);
