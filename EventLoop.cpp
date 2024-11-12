@@ -51,16 +51,20 @@ void EventLoop::QueueInLoop(const TaskFunc& task) {
     WakeUp();
 }
 
-void EventLoop::AddChannel(Channel* ch) {
-    poller->UpdateChannel(ch, EPOLL_CTL_ADD);
-}
-
-void EventLoop::ModifyChannel(Channel* ch) {
-    poller->UpdateChannel(ch, EPOLL_CTL_MOD);
+void EventLoop::UpdateChannel(Channel* ch) {
+    poller->UpdateChannel(ch);
 }
 
 void EventLoop::RemoveChannel(Channel* ch) {
-    poller->UpdateChannel(ch, EPOLL_CTL_DEL);
+    poller->RemoveChannel(ch);
+}
+
+int EventLoop::CreateWakeUpFd() {
+    int fd = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
+    if (fd < 0) {
+        exit(1);
+    }
+    return fd;
 }
 
 void EventLoop::dopendingFunctors() {

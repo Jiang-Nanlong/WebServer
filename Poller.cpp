@@ -1,37 +1,44 @@
 #include "Poller.h"
 
-void Poller::UpdateChannel(Channel* ch, int op) {
-    int fd = ch->GetFd();
-    struct epoll_event event;
-    event.events = ch->GetEvents();
-    event.data.ptr = ch;
 
-    if (op == EPOLL_CTL_ADD) {
-        if (ch->GetInEpoll() == false) {
-            if (epoll_ctl(epollfd, op, fd, &event) < 0) {
-                // 日志
-                return;
-            }
-            ch->SetInEpoll(true);
-        }
+Poller::Poller() {
+    epollfd = epoll_create(1);
+    if (epollfd < 0) {
+        LOG(ERROR, "create epoll instance failed");
+        exit(1);
     }
-    else if (op == EPOLL_CTL_DEL) {
-        if (ch->GetInEpoll() == true) {
-            if (epoll_ctl(epollfd, op, fd, nullptr) < 0) {
-                // 日志
-                return;
-            }
-            ch->SetInEpoll(false);
-        }
+}
+
+void Poller::UpdateChannel(Channel* ch) {
+    if (!hasChannel(ch)) {
+        Update(ch, EPOLL_CTL_ADD);
+        channels_[ch->GetFd()] = ch;
     }
-    else if (op == EPOLL_CTL_MOD) {
-        if (ch->GetInEpoll() == true) {
-            if (epoll_ctl(epollfd, op, fd, &event) < 0) {
-                // 日志
-                return;
-            }
-        }
+    else
+        Update(ch, EPOLL_CTL_MOD);
+}
+
+void Poller::RemoveChannel(Channel* ch) {
+    if (hasChannel(ch)) {
+        Update(ch, EPOLL_CTL_DEL);
+        channels_.erase(ch->GetFd());
     }
+}
+
+void Poller::Update(Channel* ch, int op) {
+    int fd = ch->fd;
+    struct epoll_event ev;
+    ev.events = ch->GetEvents();
+    ev.data.ptr = ch;
+    int ret = epoll_ctl(epollfd, op, fd, &ev);
+    if (ret < 0) {
+        LOG(ERROR, "epoll_ctl operate failed");
+    }
+}
+
+bool Poller::hasChannel(Channel* ch) {
+    auto it = channels_.find(ch->GetFd());
+    return it != channels_.end() && it->second == ch;
 }
 
 void Poller::Poll(vector<Channel*>& ChannelList) {
@@ -47,7 +54,7 @@ void Poller::Poll(vector<Channel*>& ChannelList) {
     }
     for (int i = 0;i < nfds;++i) {
         Channel* ch = (Channel*)evs[i].data.ptr;
-        if (ch->GetInEpoll()) {
+        if (hasChannel(ch)) {
             ch->SetRevents(evs[i].events);
             ChannelList.push_back(ch);
         }

@@ -1,3 +1,9 @@
+/*
+ * @Author: Cao Menglong
+ * @Date: 2024-11-11 17:32:24
+ * @LastEditTime: 2024-11-11 21:45:24
+ * @Description:
+ */
 #pragma once
 
 #include <sys/epoll.h>
@@ -6,31 +12,30 @@
 #include <cstring>
 #include <unistd.h>
 #include "Log.h"
+#include "noncopyable.h"
+#include <unordered_map>
 using namespace std;
 
 #define MAX_EVENTS 1024
 
-// Poller模块用来监听事件
-
-class Poller {
+class Poller :noncopyable {
 private:
-    int epollfd;    // epoll例程
+    int epollfd;
     struct epoll_event evs[MAX_EVENTS];  // 当前epoll监听的epoll_event
+    using ChannelMap = unordered_map<int, Channel*>;
+    ChannelMap channels_;
 
+    void Update(Channel* ch, int op);
 public:
-    Poller() {
-        epollfd = epoll_create(1);
-        if (epollfd < 0) {
-            LOG(ERROR, "create epoll instance failed");
-            exit(1);
-        }
-    }
+    Poller();
 
-    ~Poller() {
-        close(epollfd);
-    }
+    ~Poller() { close(epollfd); }
 
-    void UpdateChannel(Channel* ch, int op);
+    void UpdateChannel(Channel* ch);
+
+    void RemoveChannel(Channel* ch);
+
+    bool hasChannel(Channel* ch);
 
     void Poll(vector<Channel*>& ChannelList);
 };

@@ -16,7 +16,7 @@ class EventLoop {
 private:
     const pid_t threadId;   // 记录创建EventLoop对象的线程号
     shared_ptr<Poller> poller;
-    int WakeUpFd;    // 
+    int WakeUpFd;
     shared_ptr<Channel> WakeUpFdChannel;
     using Functor = function<void()>;
     vector<Functor> pendingFunctors;
@@ -26,13 +26,7 @@ private:
     bool isProcessHandleEvents;  // 是否正在处理poller返回的vector<Channel*>
     bool isProcessTasks;         // 是否正在处理额外任务
 
-    static int CreateWakeUpFd() {
-        int fd = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
-        if (fd < 0) {
-            exit(1);
-        }
-        return fd;
-    }
+    static int CreateWakeUpFd();
 
     void dopendingFunctors();
 public:
@@ -48,9 +42,8 @@ public:
 
     void QueueInLoop(const TaskFunc& task);
 
-    void AddChannel(Channel* ch);
 
-    void ModifyChannel(Channel* ch);
+    void UpdateChannel(Channel* ch);
 
     void RemoveChannel(Channel* ch);
 
