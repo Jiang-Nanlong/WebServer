@@ -1,65 +1,85 @@
 #include "EventLoop.h"
 
+__thread EventLoop* t_loopInThisThread = nullptr;
+
+const int kPollTimeMs = 10000;   // epoll_wait超时时间
+
 EventLoop::EventLoop() :
-    isLooping(false),
-    threadId(std::this_thread::get_id()),
-    WakeUpFd(CreateEventFd()),
-    poller(new Poller()),
-    isProcessHandleEvents(false),
-    isProcessTasks(false),
-    WakeUpFdChannel(new Channel(this, WakeUpFd))
+    isLooping_(false),
+    threadId_(std::this_thread::get_id()),
+    wakeupFd_(createWakeupFd()),
+    poller_(new Poller()),
+    isProcessHandleEvents_(false),
+    isProcessPendingFunctors_(false),
+    isQuit_(false),
+    wakeupChannel_(new Channel(this, wakeupFd_))
 {
-    WakeUpFdChannel->SetEvents(EPOLLIN | EPOLLET);
-    WakeUpFdChannel->SetReadCallback(bing(&EventLoop::HandleRead, this));
-    poller->UpdateChannel(WakeUpFdChannel, EPOLL_CTL_ADD);
-}
-
-void EventLoop::HandleRead() {
-    uint64_t val = 1;
-    int len = read(WakeUpFd, &val, sizeof(val));
-    if (len < 0) {
-        if (errno == EINTR || errno == EAGAIN) {
-            return;
-        }
-        exit(1);
+    if (t_loopInThisThread)
+        LOG(FATAL, "another eventloop is exist:"t_loopInThisThread);
+    else {
+        t_loopInThisThread = this;
+        wakeupChannel_->SetReadCallback(bind(&EventLoop::handleRead, this));
+        wakeupChannel_->enableReading();  // wakeupChannel监听读事件
     }
 }
 
-void EventLoop::WakeUp() {
+EventLoop::~EventLoop() {
+    wakeupChannel_->disableAll();
+    wakeupChannel_->Remove();
+    close(wakeupFd_);
+    t_loopInThisThread = nullptr;
+}
+
+void EventLoop::handleRead() {
     uint64_t val = 1;
-    int len = write(WakeUpFd, &val, sizeof(val));
-    if (len < 0) {
-        if (errno == EINTR) {
-            return;
-        }
-        exit(1);
+    int len = read(wakeupFd_, &val, sizeof(val));
+    if (len != sizeof(val)) {
+        LOG(ERROR, "eventloop wakeup read error");
     }
 }
 
-void EventLoop::RunInLoop(const TaskFunc& task) {
-    if (IsInLoop())
+void EventLoop::wakeup() {
+    uint64_t val = 1;
+    int len = write(wakeupFd_, &val, sizeof(val));
+    if (len != sizeof(val)) {
+        LOG(ERROR, "eventloop wakeup write error");
+    }
+}
+
+void EventLoop::quit() {
+    isQuit_ = true;
+
+    if (!isInLoopThread())  // 在其他线程中可以终止当前线程
+        wakeup();
+}
+
+void EventLoop::runInLoop(TaskFunc& task) {
+    if (isInLoopThread())
         task();
     else
-        QueueInLoop(task);
+        queueInLoop(task);
 }
 
-void EventLoop::QueueInLoop(const TaskFunc& task) {
+void EventLoop::queueInLoop(TaskFunc& task) {
     {
-        lock_guard<mutex> guard(mtx);
-        pendingFunctors.push_back(task);
+        lock_guard<mutex> lock(mtx_);
+        pendingFunctors_.emplace_back(task);
     }
-    WakeUp();
+    if (!isInLoopThread() || isProcessPendingFunctors_)
+        // 当前线程非该eventloop对应的线程 或者 当前线程是eventloop线程，但是正在处理pendingFunctors_，而此时要往pendingFunctors_中加新函数，
+        // 防止它执行完本次pendingFunctors_，转过头来执行新加的函数时又被阻塞
+        wakeup();
 }
 
-void EventLoop::UpdateChannel(Channel* ch) {
-    poller->UpdateChannel(ch);
+void EventLoop::updateChannel(Channel* ch) {
+    poller_->UpdateChannel(ch);
 }
 
-void EventLoop::RemoveChannel(Channel* ch) {
-    poller->RemoveChannel(ch);
+void EventLoop::removeChannel(Channel* ch) {
+    poller_->RemoveChannel(ch);
 }
 
-int EventLoop::CreateWakeUpFd() {
+int EventLoop::createWakeupFd() {
     int fd = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
     if (fd < 0) {
         exit(1);
@@ -68,29 +88,30 @@ int EventLoop::CreateWakeUpFd() {
 }
 
 void EventLoop::dopendingFunctors() {
-    isProcessTasks = true;
+    isProcessPendingFunctors_ = true;
     vector<Functor> functors;
     {
-        lock_guard<mutex> guard(mtx);
-        functors.swap(pendingFunctors);
+        lock_guard<mutex> lock(mtx_);
+        functors.swap(pendingFunctors_);   // 避免在pendingFunctors_中直接执行函数时会长期占有锁，导致其他线程无法及时向pendingFunctors_中添加函数
     }
     for (auto functor : functors)
         functor();
-    isProcessTasks = false;
+    isProcessPendingFunctors_ = false;
 }
 
 void EventLoop::loop() {
-    isLooping = true;
+    isLooping_ = true;
+    isQuit_ = false;
     LOG(INFO, "EventLoop start");
-    while (true) {
+    while (!isQuit_) {
         vector<Channel*> ReadyChannels;
-        poller->Poll(ReadyChannels);
-        isProcessHandleEvents = true;
+        poller_->Poll(kPollTimeMs, ReadyChannels);
+        isProcessHandleEvents_ = true;
         for (auto& it : ReadyChannels)
             it->HandleEvent();
-        isProcessHandleEvents = false;
+        isProcessHandleEvents_ = false;
 
         dopendingFunctors();
     }
-    isLooping = false;
+    isLooping_ = false;
 }

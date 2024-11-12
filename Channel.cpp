@@ -1,9 +1,3 @@
-/*
- * @Author: Cao Menglong
- * @Date: 2024-11-11 17:32:24
- * @LastEditTime: 2024-11-11 20:19:08
- * @Description:
- */
 #include "Channel.h"
 
 const int Channel::KNoneEvent = 0;
@@ -12,6 +6,14 @@ const int Channel::KWriteEvent = EPOLLOUT;
 
 int Channel::GetFd() {
     return fd;
+}
+
+void Channel::SetStatus(int flag) {
+    status = flag;
+}
+
+int Channel::GetStatus() {
+    return status;
 }
 
 void Channel::Update() {
@@ -36,6 +38,7 @@ uint32_t Channel::GetEvents() {
     return events;
 }
 
+// 上边有针对读写的事件设置
 /*
 void Channel::SetEvents(uint32_t event) {
     events |= event;

@@ -1,9 +1,3 @@
-/*
- * @Author: Cao Menglong
- * @Date: 2024-11-11 17:32:24
- * @LastEditTime: 2024-11-11 20:46:17
- * @Description:
- */
 #define INFO 0
 #define DEBUG 1
 #define ERROR 2
@@ -23,6 +17,7 @@
         case(3):fprintf(stdout,"[FATAL]: ");break; \
         }; \
         fprintf(stdout, "[%p %s %s:%d] " format "\n", (void*)pthread_self(), time, __FILE__, __LINE__, ##__VA_ARGS__); \
+        if(level == FATAL) exit(1); \
     } while (0)
 
 

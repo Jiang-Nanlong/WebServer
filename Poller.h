@@ -1,9 +1,3 @@
-/*
- * @Author: Cao Menglong
- * @Date: 2024-11-11 17:32:24
- * @LastEditTime: 2024-11-11 21:45:24
- * @Description:
- */
 #pragma once
 
 #include <sys/epoll.h>
@@ -21,9 +15,17 @@ using namespace std;
 class Poller :noncopyable {
 private:
     int epollfd;
-    struct epoll_event evs[MAX_EVENTS];  // 当前epoll监听的epoll_event
     using ChannelMap = unordered_map<int, Channel*>;
     ChannelMap channels_;
+
+    using EventList = vector<struct epoll_event>;
+    EventList events_;
+
+    static const int kInitEventListSize = 16;   // events_的初始大小
+
+    static const int KNew;
+    static const int KAdded;
+    static const int KDeleted;
 
     void Update(Channel* ch, int op);
 public:
@@ -37,5 +39,5 @@ public:
 
     bool hasChannel(Channel* ch);
 
-    void Poll(vector<Channel*>& ChannelList);
+    void Poll(int TimeOuts, vector<Channel*>& ChannelList);
 };

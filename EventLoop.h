@@ -9,42 +9,51 @@
 #include <memory>
 #include <sys/eventfd.h>
 #include "Log.h"
+#include "noncopyable.h"
 
 using namespace std;
 
-class EventLoop {
+// Reactor
+class EventLoop :noncopyable {
 private:
-    const pid_t threadId;   // 记录创建EventLoop对象的线程号
-    shared_ptr<Poller> poller;
-    int WakeUpFd;
-    shared_ptr<Channel> WakeUpFdChannel;
+    const std::thread::id threadId_;   // 记录创建EventLoop对象的线程id，Channel上发生的事件只能在自己的eventloop线程中处理
+    unique_ptr<Poller> poller_;
+
+    int wakeupFd_;
+    unique_ptr<Channel> wakeupChannel_;
+
     using Functor = function<void()>;
-    vector<Functor> pendingFunctors;
-    mutex mtx;
+    vector<Functor> pendingFunctors_;
+    mutex mtx_;
 
-    bool isLooping;
-    bool isProcessHandleEvents;  // 是否正在处理poller返回的vector<Channel*>
-    bool isProcessTasks;         // 是否正在处理额外任务
+    bool isLooping_;
+    bool isProcessHandleEvents_;  // 是否正在处理poller返回的vector<Channel*>
+    bool isProcessPendingFunctors_;         // 是否正在处理额外任务
+    bool isQuit_;
 
-    static int CreateWakeUpFd();
+    static int createWakeupFd();
 
     void dopendingFunctors();
 public:
     EventLoop();
 
-    void HandleRead();
+    ~EventLoop();
 
-    void WakeUp();
+    void handleRead();
 
-    bool isInLoopThread() const { return threadId == std::this_thread::get_id(); }
+    void wakeup();
 
-    void RunInLoop(const TaskFunc& task);
+    bool isInLoopThread() const { return threadId_ == std::this_thread::get_id(); }
 
-    void QueueInLoop(const TaskFunc& task);
+    void quit();
 
-    void UpdateChannel(Channel* ch);
+    void runInLoop(TaskFunc& task);
 
-    void RemoveChannel(Channel* ch);
+    void queueInLoop(TaskFunc& task);
+
+    void updateChannel(Channel* ch);
+
+    void removeChannel(Channel* ch);
 
     void loop();
 };

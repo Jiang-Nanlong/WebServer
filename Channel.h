@@ -1,7 +1,7 @@
 /*
  * @Author: Cao Menglong
  * @Date: 2024-11-11 17:32:24
- * @LastEditTime: 2024-11-11 20:26:30
+ * @LastEditTime: 2024-11-12 19:51:11
  * @Description:
  */
 #pragma once
@@ -33,24 +33,27 @@ private:
     static const int KReadEvent;
     static const int KWriteEvent;
 
+    int status;  // 在poller中的状态 -1,1,2，可以在Channel中直接看到它在poller中的状态，而不用经过Eventloop
+
 public:
     Channel(int fd, EventLoop* loop) :
         fd(fd),
         lp(loop),
+        status(-1),
         _read_callback(nullptr),
         _write_callback(nullptr),
         _error_callback(nullptr),
         _close_callback(nullptr) {
-        lp->AddChannel(this);
+        lp->UpdateChannel(this);   // Channel刚创建就注册到对应的eventloop上
     }
 
     ~Channel() {}
 
     int GetFd();
 
-    void SetInEpoll(bool flag);
+    void SetStatus(int flag);
 
-    bool GetInEpoll();
+    int GetStatus();
 
     void Update();
 
