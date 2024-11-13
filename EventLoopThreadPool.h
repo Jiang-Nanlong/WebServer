@@ -10,9 +10,9 @@ using namespace std;
 
 class EventLoopThreadLoop :noncopyable {
 private:
-    EventLoop* mainLoop_;  // Ö÷reactor
+    EventLoop* mainLoop_;   // ä¸»reactor
     string name_;
-    int threadNum_;   // ´ÓÏß³ÌÊıÁ¿
+    int threadNum_;         // ä»çº¿ç¨‹æ•°é‡
     int next_;
     vector<unique_ptr<EventLoopThread>> threads_;
     vector<EventLoop*> loops_;
