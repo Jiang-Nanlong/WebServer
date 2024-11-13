@@ -2,7 +2,7 @@
 
 __thread EventLoop* t_loopInThisThread = nullptr;
 
-const int kPollTimeMs = 10000;   // epoll_wait³¬Ê±Ê±¼ä
+const int kPollTimeMs = 10000;   // epoll_waitè¶…æ—¶æ—¶é—´
 
 EventLoop::EventLoop() :
     isLooping_(false),
@@ -19,7 +19,7 @@ EventLoop::EventLoop() :
     else {
         t_loopInThisThread = this;
         wakeupChannel_->setReadCallback(bind(&EventLoop::handleRead, this));
-        wakeupChannel_->enableReading();  // wakeupChannel¼àÌı¶ÁÊÂ¼ş
+        wakeupChannel_->enableReading();  // wakeupChannelç›‘å¬è¯»äº‹ä»¶
     }
 }
 
@@ -49,7 +49,7 @@ void EventLoop::wakeup() {
 void EventLoop::quit() {
     isQuit_ = true;
 
-    if (!isInLoopThread())  // ÔÚÆäËûÏß³ÌÖĞ¿ÉÒÔÖÕÖ¹µ±Ç°Ïß³Ì
+    if (!isInLoopThread())  // åœ¨å…¶ä»–çº¿ç¨‹ä¸­å¯ä»¥ç»ˆæ­¢å½“å‰çº¿ç¨‹
         wakeup();
 }
 
@@ -66,8 +66,8 @@ void EventLoop::queueInLoop(TaskFunc& task) {
         pendingFunctors_.emplace_back(task);
     }
     if (!isInLoopThread() || isProcessPendingFunctors_)
-        // µ±Ç°Ïß³Ì·Ç¸Ãeventloop¶ÔÓ¦µÄÏß³Ì »òÕß µ±Ç°Ïß³ÌÊÇeventloopÏß³Ì£¬µ«ÊÇÕıÔÚ´¦ÀípendingFunctors_£¬¶ø´ËÊ±ÒªÍùpendingFunctors_ÖĞ¼ÓĞÂº¯Êı£¬
-        // ·ÀÖ¹ËüÖ´ĞĞÍê±¾´ÎpendingFunctors_£¬×ª¹ıÍ·À´Ö´ĞĞĞÂ¼ÓµÄº¯ÊıÊ±ÓÖ±»×èÈû
+        // å½“å‰çº¿ç¨‹éè¯¥eventloopå¯¹åº”çš„çº¿ç¨‹ æˆ–è€… å½“å‰çº¿ç¨‹æ˜¯eventloopçº¿ç¨‹ï¼Œä½†æ˜¯æ­£åœ¨å¤„ç†pendingFunctors_ï¼Œè€Œæ­¤æ—¶è¦å¾€pendingFunctors_ä¸­åŠ æ–°å‡½æ•°ï¼Œ
+        // é˜²æ­¢å®ƒæ‰§è¡Œå®Œæœ¬æ¬¡pendingFunctors_ï¼Œè½¬è¿‡å¤´æ¥æ‰§è¡Œæ–°åŠ çš„å‡½æ•°æ—¶åˆè¢«é˜»å¡
         wakeup();
 }
 
@@ -92,7 +92,7 @@ void EventLoop::dopendingFunctors() {
     vector<Functor> functors;
     {
         lock_guard<mutex> lock(mtx_);
-        functors.swap(pendingFunctors_);   // ±ÜÃâÔÚpendingFunctors_ÖĞÖ±½ÓÖ´ĞĞº¯ÊıÊ±»á³¤ÆÚÕ¼ÓĞËø£¬µ¼ÖÂÆäËûÏß³ÌÎŞ·¨¼°Ê±ÏòpendingFunctors_ÖĞÌí¼Óº¯Êı
+        functors.swap(pendingFunctors_);   // é¿å…åœ¨pendingFunctors_ä¸­ç›´æ¥æ‰§è¡Œå‡½æ•°æ—¶ä¼šé•¿æœŸå æœ‰é”ï¼Œå¯¼è‡´å…¶ä»–çº¿ç¨‹æ— æ³•åŠæ—¶å‘pendingFunctors_ä¸­æ·»åŠ å‡½æ•°
     }
     for (auto functor : functors)
         functor();

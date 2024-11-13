@@ -8,7 +8,7 @@
 #include <condition_variable>
 using namespace std;
 
-// EventLoopThread类中通过一个Thread对象来管理一个线程，该线程中运行EventLoop.loop()
+// EventLoopThread绫讳腑閫氳繃涓�涓猅hread瀵硅薄鏉ョ鐞嗕竴涓嚎绋嬶紝璇ョ嚎绋嬩腑杩愯EventLoop.loop()
 class EventLoopThread :noncopyable {
 private:
     EventLoop* loop_;
@@ -16,7 +16,7 @@ private:
     mutex mtx_;
     condition_variable cond_;
     using ThreadInitCallback = function<void(EventLoop*)>;
-    ThreadInitCallback callback_;   // 可以在eventloop对象在开始loop之前执行某些操作
+    ThreadInitCallback callback_;   // 鍙互鍦╡ventloop瀵硅薄鍦ㄥ紑濮媗oop涔嬪墠鎵ц鏌愪簺鎿嶄綔
 
     void threadFunc();
 

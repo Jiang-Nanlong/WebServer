@@ -16,9 +16,9 @@ EventLoopThread::~EventLoopThread() {
     }
 }
 
-// ·µ»ØĞÂ´´½¨µÄeventloop¶ÔÏóµÄÖ¸Õë
+// è¿”å›æ–°åˆ›å»ºçš„eventloopå¯¹è±¡çš„æŒ‡é’ˆ
 EventLoop* EventLoopThread::startLoop() {
-    thread_.start();  // Í¨¹ıThread¶ÔÏóÀ´´´½¨Ò»¸öeventloop¶ÔÏó£¬È»ºó¿ªÊ¼loop
+    thread_.start();  // é€šè¿‡Threadå¯¹è±¡æ¥åˆ›å»ºä¸€ä¸ªeventloopå¯¹è±¡ï¼Œç„¶åå¼€å§‹loop
 
     {
         unique_lock<mutex> lock(mtx_);
@@ -28,7 +28,7 @@ EventLoop* EventLoopThread::startLoop() {
 }
 
 void EventLoopThread::threadFunc() {
-    EventLoop loop;   // Õâ¸öeventloop¶ÔÏóÔÚÕ»ÉÏ£¬ÔËĞĞ½áÊø»á×Ô¶¯ÊÍ·Å£¬²»ÓÃµ£ĞÄÊÍ·ÅµÄÎÊÌâ
+    EventLoop loop;   // è¿™ä¸ªeventloopå¯¹è±¡åœ¨æ ˆä¸Šï¼Œè¿è¡Œç»“æŸä¼šè‡ªåŠ¨é‡Šæ”¾ï¼Œä¸ç”¨æ‹…å¿ƒé‡Šæ”¾çš„é—®é¢˜
     if (callback_)
         callback_(&loop);
 
@@ -36,7 +36,7 @@ void EventLoopThread::threadFunc() {
         loop_ = &loop;
         cond_.notify_one();
     }
-    loop.loop();   // ÔÚ´Ë´¦ÔËĞĞeventloop.loop()
+    loop.loop();   // åœ¨æ­¤å¤„è¿è¡Œeventloop.loop()
 
     lock_guard<mutex> lock(mtx_);
     loop_ = nullptr;

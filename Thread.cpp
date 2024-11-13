@@ -25,7 +25,7 @@ void Thread::join() {
     thread_->join();
 }
 
-// 创建一个新线程执行func_函数
+// 鍒涘缓涓�涓柊绾跨▼鎵цfunc_鍑芥暟
 void Thread::start() {
     started_ = true;
     thread_ = shared_ptr<thread>(new thread([&] {
@@ -33,7 +33,7 @@ void Thread::start() {
             threadId_ = std::this_thread::get_id();
             cond_.notify_one();
         }
-        func_();  // 之后这里边会创建一个eventloop，然后开始调用loop()
+        func_();  // 涔嬪悗杩欓噷杈逛細鍒涘缓涓�涓猠ventloop锛岀劧鍚庡紑濮嬭皟鐢╨oop()
         started_ = false;
         }));
 
