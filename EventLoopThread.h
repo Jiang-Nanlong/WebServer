@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Thread.h"
 #include "EventLoop.h"
 #include "noncopyable.h"
@@ -14,7 +16,7 @@ private:
     mutex mtx_;
     condition_variable cond_;
     using ThreadInitCallback = function<void(EventLoop*)>;
-    ThreadInitCallback callback_;
+    ThreadInitCallback callback_;   // 可以在eventloop对象在开始loop之前执行某些操作
 
     void threadFunc();
 

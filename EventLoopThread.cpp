@@ -28,9 +28,9 @@ EventLoop* EventLoopThread::startLoop() {
 }
 
 void EventLoopThread::threadFunc() {
-    EventLoop loop;
+    EventLoop loop;   // 这个eventloop对象在栈上，运行结束会自动释放，不用担心释放的问题
     if (callback_)
-        callback_();
+        callback_(&loop);
 
     {
         loop_ = &loop;
