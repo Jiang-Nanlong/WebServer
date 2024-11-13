@@ -5,52 +5,52 @@ const int Poller::KAdded = 1
 const int Poller::KDeleted = 2;
 
 Poller::Poller() :
-    epollfd(epoll_create(1)),
+    epollFd_(epoll_create(1)),
     events_(kInitEventListSize) {
-    if (epollfd < 0) {
+    if (epollFd_ < 0) {
         LOG(ERROR, "create epoll instance failed");
         exit(1);
     }
 }
 
-void Poller::UpdateChannel(Channel* ch) {
+void Poller::updateChannel(Channel* ch) {
     /* if (!hasChannel(ch)) {
-        Update(ch, EPOLL_CTL_ADD);
-        channels_[ch->GetFd()] = ch;
+        update(ch, EPOLL_CTL_ADD);
+        channels_[ch->getFd()] = ch;
     }
     else
-        Update(ch, EPOLL_CTL_MOD); */
+        update(ch, EPOLL_CTL_MOD); */
 
-    int status = ch->GetStatus();
+    int status = ch->getStatus();
     if (status == KNew || status == KDeleted) {
-        Update(ch, EPOLL_CTL_ADD);
-        channels_[ch->GetFd()] = ch;
-        ch->SetStatus(KAdded);
+        update(ch, EPOLL_CTL_ADD);
+        channels_[ch->getFd()] = ch;
+        ch->setStatus(KAdded);
     }
     else {
-        Update(ch, EPOLL_CTL_MOD);
+        update(ch, EPOLL_CTL_MOD);
     }
 }
 
-void Poller::RemoveChannel(Channel* ch) {
+void Poller::removeChannel(Channel* ch) {
     /* if (hasChannel(ch)) {
-        Update(ch, EPOLL_CTL_DEL);
-        channels_.erase(ch->GetFd());
+        update(ch, EPOLL_CTL_DEL);
+        channels_.erase(ch->getFd());
     } */
-    int status = ch->GetStatus();
+    int status = ch->getStatus();
     if (status == KAdded) {
-        Update(ch, EPOLL_CTL_DEL);
-        channels_.erase(ch->GetFd());
-        ch->SetStatus(KDeleted);
+        update(ch, EPOLL_CTL_DEL);
+        channels_.erase(ch->getFd());
+        ch->setStatus(KDeleted);
     }
 }
 
-void Poller::Update(Channel* ch, int op) {
-    int fd = ch->GetFd();
+void Poller::update(Channel* ch, int op) {
+    int fd = ch->getFd();
     struct epoll_event ev;
-    ev.events = ch->GetEvents();
+    ev.events = ch->getEvents();
     ev.data.ptr = ch;
-    int ret = epoll_ctl(epollfd, op, fd, &ev);
+    int ret = epoll_ctl(epollFd_, op, fd, &ev);
     if (ret < 0) {
         if (op == EPOLL_CTL_DEL)
             LOG(ERROR, "epoll_ctl delete failed");
@@ -60,13 +60,13 @@ void Poller::Update(Channel* ch, int op) {
 }
 
 bool Poller::hasChannel(Channel* ch) {
-    auto it = channels_.find(ch->GetFd());
+    auto it = channels_.find(ch->getFd());
     return it != channels_.end() && it->second == ch;
 }
 
 // muduo库中这里要返回一个时间戳，在eventloop中要用于channel的handleevent函数，在handleevent函数中主要用于读回调函数
-void Poller::Poll(int TimeOuts, vector<Channel*>& ChannelList) {
-    int nfds = epoll_wait(epollfd, &*events_.begin(), static_cast<int>(events_.size()), TimeOuts);
+void Poller::poll(int TimeOuts, vector<Channel*>& ChannelList) {
+    int nfds = epoll_wait(epollFd_, &*events_.begin(), static_cast<int>(events_.size()), TimeOuts);
     if (nfds < 0) {
         if (errno == EINTR) {
             LOG(INFO, "epoll wait EINTR");
@@ -81,7 +81,7 @@ void Poller::Poll(int TimeOuts, vector<Channel*>& ChannelList) {
     else {
         for (int i = 0;i < nfds;++i) {
             Channel* ch = static_cast<Channel*>(events_[i].data.ptr);
-            ch->SetRevents(events_[i].events);
+            ch->setRevents(events_[i].events);
             ChannelList.push_back(ch);
         }
         if (nfds == static_cast<int>(events_.size()))  // 这个地方倒是不用担心有事件这次每次处理，默认采用水平触发，下一次还会再就绪

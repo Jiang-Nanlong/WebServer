@@ -1,9 +1,3 @@
-/*
- * @Author: Cao Menglong
- * @Date: 2024-11-11 17:32:24
- * @LastEditTime: 2024-11-12 19:51:11
- * @Description:
- */
 #pragma once
 
 #include <stdint.h>
@@ -18,16 +12,16 @@ class EventLoop;
 
 class Channel :noncopyable {
 private:
-    int fd;
-    uint32_t events = 0;
-    uint32_t revents = 0;
-    unique_ptr<EventLoop> lp;   // 只需要修改每个Channel实例就能从EventLoop到Poller都修改
+    int fd_;
+    uint32_t events_ = 0;
+    uint32_t revents_ = 0;
+    unique_ptr<EventLoop> lp_;   // 只需要修改每个Channel实例就能从EventLoop到Poller都修改
 
     using EventCallback = function <void()>;
-    EventCallback _read_callback;
-    EventCallback _write_callback;
-    EventCallback _error_callback;
-    EventCallback _close_callback;
+    EventCallback readCallback_;
+    EventCallback writeCallback_;
+    EventCallback errorCallback_;
+    EventCallback closeCallback_;
 
     static const int KNoneEvent;
     static const int KReadEvent;
@@ -37,29 +31,29 @@ private:
 
 public:
     Channel(int fd, EventLoop* loop) :
-        fd(fd),
-        lp(loop),
+        fd_(fd),
+        lp_(loop),
         status(-1),
-        _read_callback(nullptr),
-        _write_callback(nullptr),
-        _error_callback(nullptr),
-        _close_callback(nullptr) {
-        lp->UpdateChannel(this);   // Channel刚创建就注册到对应的eventloop上
+        readCallback_(nullptr),
+        writeCallback_(nullptr),
+        errorCallback_(nullptr),
+        closeCallback_(nullptr) {
+        lp_->updateChannel(this);   // Channel刚创建就注册到对应的eventloop上
     }
 
     ~Channel() {}
 
-    int GetFd();
+    int getFd();
 
-    void SetStatus(int flag);
+    void setStatus(int flag);
 
-    int GetStatus();
+    int getStatus();
 
-    void Update();
+    void update();
 
-    void Remove();
+    void remove();
 
-    uint32_t GetEvents();
+    uint32_t getEvents();
 
     void enableReading();
 
@@ -71,23 +65,23 @@ public:
 
     void disableAll();
 
-    uint32_t GetRevents();
+    uint32_t getRevents();
 
-    void SetRevents(int event);
+    void setRevents(int event);
 
-    void SetReadCallback(EventCallback fn);
+    void setReadCallback(EventCallback fn);
 
-    void SetWriteCallback(EventCallback fn);
+    void setWriteCallback(EventCallback fn);
 
-    void SetErrorCallback(EventCallback fn);
+    void setErrorCallback(EventCallback fn);
 
-    void SetCloseCallback(EventCallback fn);
+    void setCloseCallback(EventCallback fn);
 
-    bool isNoneEvent() const { return events == KNoneEvent; }
+    bool isNoneEvent() const { return events_ == KNoneEvent; }
 
-    bool isWriteAble() const { return events & KWriteEvent; }
+    bool isWriteAble() const { return events_ & KWriteEvent; }
 
-    bool isReadAble() const { return events & KReadEvent; }
+    bool isReadAble() const { return events_ & KReadEvent; }
 
-    void HandleEvent();
+    void handleEvent();
 };

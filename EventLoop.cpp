@@ -18,14 +18,14 @@ EventLoop::EventLoop() :
         LOG(FATAL, "another eventloop is exist:"t_loopInThisThread);
     else {
         t_loopInThisThread = this;
-        wakeupChannel_->SetReadCallback(bind(&EventLoop::handleRead, this));
+        wakeupChannel_->setReadCallback(bind(&EventLoop::handleRead, this));
         wakeupChannel_->enableReading();  // wakeupChannel¼àÌý¶ÁÊÂ¼þ
     }
 }
 
 EventLoop::~EventLoop() {
     wakeupChannel_->disableAll();
-    wakeupChannel_->Remove();
+    wakeupChannel_->remove();
     close(wakeupFd_);
     t_loopInThisThread = nullptr;
 }
@@ -72,11 +72,11 @@ void EventLoop::queueInLoop(TaskFunc& task) {
 }
 
 void EventLoop::updateChannel(Channel* ch) {
-    poller_->UpdateChannel(ch);
+    poller_->updateChannel(ch);
 }
 
 void EventLoop::removeChannel(Channel* ch) {
-    poller_->RemoveChannel(ch);
+    poller_->removeChannel(ch);
 }
 
 int EventLoop::createWakeupFd() {
@@ -105,10 +105,10 @@ void EventLoop::loop() {
     LOG(INFO, "EventLoop start");
     while (!isQuit_) {
         vector<Channel*> ReadyChannels;
-        poller_->Poll(kPollTimeMs, ReadyChannels);
+        poller_->poll(kPollTimeMs, ReadyChannels);
         isProcessHandleEvents_ = true;
         for (auto& it : ReadyChannels)
-            it->HandleEvent();
+            it->handleEvent();
         isProcessHandleEvents_ = false;
 
         dopendingFunctors();

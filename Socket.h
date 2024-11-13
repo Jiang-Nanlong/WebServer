@@ -23,7 +23,7 @@ public:
 
     ~Socket() { Close(); };
 
-    int GetFd() { return sockfd; }
+    int getFd() { return sockfd; }
 
     bool Create();
 

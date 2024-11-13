@@ -14,7 +14,7 @@ using namespace std;
 
 class Poller :noncopyable {
 private:
-    int epollfd;
+    int epollFd_;
     using ChannelMap = unordered_map<int, Channel*>;
     ChannelMap channels_;
 
@@ -27,17 +27,17 @@ private:
     static const int KAdded;
     static const int KDeleted;
 
-    void Update(Channel* ch, int op);
+    void update(Channel* ch, int op);
 public:
     Poller();
 
-    ~Poller() { close(epollfd); }
+    ~Poller() { close(epollFd_); }
 
-    void UpdateChannel(Channel* ch);
+    void updateChannel(Channel* ch);
 
-    void RemoveChannel(Channel* ch);
+    void removeChannel(Channel* ch);
 
     bool hasChannel(Channel* ch);
 
-    void Poll(int TimeOuts, vector<Channel*>& ChannelList);
+    void poll(int TimeOuts, vector<Channel*>& ChannelList);
 };

@@ -4,83 +4,83 @@ const int Channel::KNoneEvent = 0;
 const int Channel::KReadEvent = EPOLLIN | EPOLLPRI;
 const int Channel::KWriteEvent = EPOLLOUT;
 
-int Channel::GetFd() {
+int Channel::getFd() {
     return fd;
 }
 
-void Channel::SetStatus(int flag) {
+void Channel::setStatus(int flag) {
     status = flag;
 }
 
-int Channel::GetStatus() {
+int Channel::getStatus() {
     return status;
 }
 
-void Channel::Update() {
+void Channel::update() {
     lp->UpdateChannel(this);
 }
 
-void Channel::Remove() {
+void Channel::remove() {
     lp->RemoveChannel(this);
 }
 
-void Channel::enableReading() { events |= KReadEvent; Update(); }
+void Channel::enableReading() { events_ |= KReadEvent; update(); }
 
-void Channel::disableReading() { events &= ~KReadEvent; Update(); }
+void Channel::disableReading() { events_ &= ~KReadEvent; update(); }
 
-void Channel::enableWriting() { events |= KWriteEvent; Update(); }
+void Channel::enableWriting() { events_ |= KWriteEvent; update(); }
 
-void Channel::disableWriting() { events &= ~KWriteEvent; Update(); }
+void Channel::disableWriting() { events_ &= ~KWriteEvent; update(); }
 
-void Channel::disableAll() { events = KNoneEvent; Update(); }
+void Channel::disableAll() { events_ = KNoneEvent; update(); }
 
-uint32_t Channel::GetEvents() {
-    return events;
+uint32_t Channel::getEvents() {
+    return events_;
 }
 
 // 上边有针对读写的事件设置
 /*
 void Channel::SetEvents(uint32_t event) {
-    events |= event;
+    events_ |= event;
 }
 */
 
-uint32_t Channel::GetRevents() {
-    return revents;
+uint32_t Channel::getRevents() {
+    return revents_;
 }
 
-void Channel::SetRevents(int event) {
-    revents = event;
+void Channel::setRevents(int event) {
+    revents_ = event;
 }
 
-void Channel::SetReadCallback(EventCallback fn) {
-    _read_callback = fn;
+void Channel::setReadCallback(EventCallback fn) {
+    readCallback_ = fn;
 }
 
-void Channel::SetWriteCallback(EventCallback fn) {
-    _write_callback = fn;
+void Channel::setWriteCallback(EventCallback fn) {
+    writeCallback_ = fn;
 }
 
-void Channel::SetErrorCallback(EventCallback fn) {
-    _error_callback = fn;
+void Channel::setErrorCallback(EventCallback fn) {
+    errorCallback_ = fn;
 }
 
-void Channel::SetCloseCallback(EventCallback fn) {
-    _close_callback = fn;
+void Channel::setCloseCallback(EventCallback fn) {
+    closeCallback_ = fn;
 }
 
-void Channel::HandleEvent() {
-    if (revents & EPOLLHUP && !(revents & EPOLLIN)) {
-        if (_close_callback)_close_callback();
+void Channel::handleEvent() {
+    if (revents_ & EPOLLHUP && !(revents_ & EPOLLIN)) {
+        if (closeCallback_)closeCallback_();
     }
-    else if (revents & (EPOLLIN | EPOLLRDHUP | EPOLLPRI)) {
-        if (_read_callback)_read_callback();
+    else if (revents_ & (EPOLLIN | EPOLLRDHUP | EPOLLPRI)) {
+        if (readCallback_)readCallback_();
     }
-    else if (revents & EPOLLOUT) {
-        if (_write_callback)_write_callback();
+    else if (revents_ & EPOLLOUT) {
+        if (writeCallback_)writeCallback_();
     }
-    else if (revents & EPOLLERR) {
-        if (_error_callback)_error_callback();
+    else if (revents_ & EPOLLERR) {
+        if (errorCallback_)errorCallback_();
         return;
     }
 }
