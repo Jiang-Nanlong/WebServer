@@ -4,6 +4,17 @@ const int Channel::KNoneEvent = 0;
 const int Channel::KReadEvent = EPOLLIN | EPOLLPRI;
 const int Channel::KWriteEvent = EPOLLOUT;
 
+Channel::Channel(int fd, EventLoop* loop) :
+    fd_(fd),
+    lp_(loop),
+    status(-1),
+    readCallback_(nullptr),
+    writeCallback_(nullptr),
+    errorCallback_(nullptr),
+    closeCallback_(nullptr) {
+    lp_->updateChannel(this);   // Channel刚创建就注册到对应的eventloop上
+}
+
 int Channel::getFd() {
     return fd;
 }
@@ -38,7 +49,7 @@ uint32_t Channel::getEvents() {
     return events_;
 }
 
-// �ϱ�����Զ�д���¼�����
+// 上边有针对读写的事件更细分的设置
 /*
 void Channel::SetEvents(uint32_t event) {
     events_ |= event;

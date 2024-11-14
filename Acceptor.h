@@ -1,0 +1,36 @@
+#pragma once
+
+#include "noncopyable.h"
+#include "Socket.h"
+#include "Channel.h"
+#include <functional>
+#include "Log.h"
+#include "InetAddress.h"
+#include <unistd.h>
+using namespace std;
+
+class EventLoop;
+
+class Acceptor :noncopyable {
+private:
+    EventLoop* loop_;  // main loop
+    Socket acceptSocket_;   // 主线程上用于监听客户端连接的socket，这个socket要设置成非阻塞的
+    Channel acceptChannel_;
+
+    using NewConnectionCallback = function<void(int sockfd, const InetAddress& addr)>;
+    NewConnectionCallback newConnectionCallback_;  // tcpserver中设定，分发新建立的连接到subreactor
+
+    int createNonblockSocket();
+
+    void handleRead();
+public:
+    Acceptor(EventLoop* loop, const InetAddress& addr);
+
+    ~Acceptor();
+
+    void setNewConnectionCallback(const NewConnectionCallback& cb);
+
+    void listen();
+
+    
+}

@@ -30,16 +30,7 @@ private:
     int status;  // 在poller中的状态 -1,1,2，可以在Channel中直接看到它在poller中的状态，而不用经过Eventloop
 
 public:
-    Channel(int fd, EventLoop* loop) :
-        fd_(fd),
-        lp_(loop),
-        status(-1),
-        readCallback_(nullptr),
-        writeCallback_(nullptr),
-        errorCallback_(nullptr),
-        closeCallback_(nullptr) {
-        lp_->updateChannel(this);   // Channel刚创建就注册到对应的eventloop上
-    }
+    Channel(int fd, EventLoop* loop);
 
     ~Channel() {}
 

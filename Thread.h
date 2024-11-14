@@ -9,10 +9,10 @@
 
 using namespace std;
 
-// 一个Thread对象用来管理一个线程，这个线程上运行一个eventloop
+// 涓�涓猅hread瀵硅薄鐢ㄦ潵绠＄悊涓�涓嚎绋嬶紝杩欎釜绾跨▼涓婅繍琛屼竴涓猠ventloop
 class Thread :noncopyable {
 private:
-    std::thread::id threadId_;   // 管理的线程对应的id，也就是eventloop对象中对应的id
+    std::thread::id threadId_;   // 绠＄悊鐨勭嚎绋嬪搴旂殑id锛屼篃灏辨槸eventloop瀵硅薄涓搴旂殑id
     shared_ptr<thread> thread_;
     using ThreadFunc = function<void()>;
     ThreadFunc func_;

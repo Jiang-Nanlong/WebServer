@@ -1,6 +1,7 @@
 #pragma once
 
 #include <sys/socket.h>
+#include <sys/types.h>
 #include <string>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -8,32 +9,33 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include "Log.h"
+#include "noncopyable.h"
+#include "InetAddress.h"
 using namespace std;
 
 #define LISTEN_NUM 1024
 
-class Socket
-{
+class Socket :noncopyable {
 private:
-    int sockfd;
+    int sockFd_;
 public:
-    Socket() :sockfd(-1) {}
+    Socket() :sockFd_(-1) {}
 
-    Socket(int fd) :sockfd(fd) {}
+    Socket(int fd) :sockFd_(fd) {}
 
     ~Socket() { Close(); };
 
-    int getFd() { return sockfd; }
+    int getFd() const { return sockFd_; }
 
-    bool Create();
+    void Create();
 
-    bool Bind(const string& ip, uint16_t port);
+    void Bind(const InetAddress& addr);
 
-    bool Listen(int num = LISTEN_NUM);
+    void Listen(int num = LISTEN_NUM);
 
-    bool Connect(const string& ip, uint16_t port);
+    void Connect(const InetAddress& addr);
 
-    int Accept();
+    int Accept(InetAddress& addr);  // 把客户端信息通过参数向上层返回
 
     ssize_t Recv(void* buf, size_t len, int flag = 0);
 
@@ -45,19 +47,17 @@ public:
 
     void Close();
 
-    //设置套接字开启地址端口重用
-    void ReuseAddress();
-
-    //设置套接字为非阻塞
     void SetNonBlock();
 
-    //感觉上边这段可以设为私有成员函数
+    void ShutdownWrite();
 
-    // 当前sockfd是服务端套接字
-    bool CreateServer(const string& ip = "0.0.0.0", uint16_t port, bool block_flag = false);
+    void SetTcpNoDelay(bool on);
 
-    // 当前sockfd是客户端套接字
-    bool CreateClient(const string& ip, uint16_t port);
+    void SetReuseAddr(bool on);
 
+    void SetReusePort(bool on);
 
+    void SetKeepAlive(bool on);
+
+    void SetNonBlock(bool on);
 };

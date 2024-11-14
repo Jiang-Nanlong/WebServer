@@ -1,60 +1,47 @@
 #include "Socket.h"
 
-bool Socket::Create() {
-    sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockfd < 0) {
+void Socket::Create() {
+    if (sockFd_ > 0) return sockFd_;
+
+    sockFd_ = socket(AF_INET, SOCK_STREAM, 0);
+    if (sockFd_ < 0) {
         LOG(ERROR, "creat socket failed");
-        return false;
     }
-    return true;
 }
 
-bool Socket::Bind(const string& ip, uint16_t port) {
-    struct sockaddr_in addr;
-    memset(&addr, 0, sizeof(addr));
-    addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = inet_addr(ip.c_str());
-    addr.sin_port = htons(port);
-    if (bind(sockfd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
-        LOG(ERROR, "socket bind failed");
+void Socket::Bind(const InetAddress& addr) {
+    if (bind(sockFd_, (struct sockaddr*)addr.getSockAddr(), sizeof(sockaddr_in)) < 0) {
+        LOG(FATAL, "socket bind failed");
         Close();
-        return false;
     }
-    return true;
 }
 
-bool Socket::Listen(int num) {
-    if (listen(sockfd, num) < 0) {
+void Socket::Listen(int num) {
+    if (listen(sockFd_, num) < 0)
         LOG(ERROR, "socket listen failed");
-        return false;
-    }
-    return true;
 }
 
-bool Socket::Connect(const string& ip, uint16_t port) {
-    struct sockaddr_in addr;
-    memset(&addr, 0, sizeof(addr));
-    addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = inet_addr(ip.c_str());
-    addr.sin_port = htons(port);
-    if (connect(sockfd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
+void Socket::Connect(const InetAddress& addr) {
+    if (connect(sockFd_, (struct sockaddr*)&addr.getSockAddr(), sizeof(sockaddr_in)) < 0)
         LOG(ERROR, "socket connect failed");
-        return false;
-    }
-    return true;
 }
 
-int Socket::Accept() {
-    int clnt_sock = accept(sockfd, nullptr, nullptr);
+int Socket::Accept(InetAddress& addr) {
+    struct sockaddr_in temp;
+    socklen_t len;
+    memset(&temp, 0, sizeof(sockaddr_in));
+
+    int clnt_sock = accept(sockFd_, (struct sockaddr*)&temp, &len);
     if (clnt_sock < 0) {
         LOG(ERROR, "socket accept failed");
         return -1;
     }
+    addr.setSockAddr(temp);
     return clnt_sock;
 }
 
 ssize_t Socket::Recv(void* buf, size_t len, int flag) {
-    ssize_t len = recv(sockfd, buf, len, flag);
+    ssize_t len = recv(sockFd_, buf, len, flag);
     if (len <= 0) {
         if (errno == EAGAIN || errno == EINTR)
             return 0;
@@ -69,7 +56,7 @@ ssize_t Socket::NonBlockRecv(void* buf, size_t len) {
 }
 
 ssize_t Socket::Send(void* buf, size_t len, int flag) {
-    ssize_t len = send(sockfd, buf, len, flag);
+    ssize_t len = send(sockFd_, buf, len, flag);
     if (len <= 0) {
         if (errno == EAGAIN || errno == EINTR)
             return 0;
@@ -85,35 +72,44 @@ ssize_t Socket::NonBlockSend(void* buf, size_t len) {
 }
 
 void Socket::Close() {
-    if (sockfd != -1) {
-        close(sockfd);
-        sockfd = -1;
+    if (sockFd_ != -1) {
+        close(sockFd_);
+        sockFd_ = -1;
     }
 }
 
-void Socket::ReuseAddress() {
-    int opt = 1;
-    setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (void*)&opt, sizeof(int));  // 关闭time-wait
-    opt = 1;    //SO_REUSEPORT ：设置端口号重用
-    setsockopt(sockfd, SOL_SOCKET, SO_REUSEPORT, (void*)&opt, sizeof(int));
+void Socket::SetNonBlock() {
+    int flag = fcntl(sockFd_, F_GETFL);
+    fcntl(sockFd_, F_SETFL, flag | O_NONBLOCK);
+}
+
+void Socket::ShutdownWrite() {
+    if (shutdown(sockFd_, SHUT_WR) < 0)
+        LOG(ERROR, "shutdown write failed");
+}
+
+void Socket::SetTcpNoDelay(bool on) {
+    int optval = on ? 1 : 0;
+    setsockopt(sockFd_, IPPROTO_TCP, TCP_NODELAY, &optval, sizeof(optval));
+}
+
+void Socket::SetReuseAddr(bool on) {
+    int optval = on ? 1 : 0;
+    setsockopt(sockFd_, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
+}
+
+void Socket::SetReusePort(bool on) {
+    int optval = on ? 1 : 0;
+    setsockopt(sockFd_, SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval));
+}
+
+void Socket::SetKeepAlive(bool on) {
+    int optval = on ? 1 : 0;
+    setsockopt(sockFd_, SOL_SOCKET, SO_KEEPALIVE, &optval, sizeof(optval));
 }
 
 void Socket::SetNonBlock() {
-    int flag = fcntl(sockfd, F_GETFL);
-    fcntl(sockfd, F_SETFL, flag | O_NONBLOCK);
-}
-
-bool Socket::CreateServer(const string& ip, uint16_t port, bool block_flag) {
-    if (Create() == false) return false;
-    if (block_flag) SetNonBlock();
-    if (Bind(ip, port) == false) return false;
-    if (Listen() == false) return false;
-    ReuseAddress();
-    return true;
-}
-
-bool Socket::CreateClient(const string& ip, uint16_t port) {
-    if (Create() == false) return false;
-    if (Connect(ip, port) == false) return false;
-    return true;
+    int flags = fcntl(sockFd_, F_GETFL, 0);
+    flags |= O_NONBLOCK;
+    fcntl(sockFd_, F_SETFL, flags);
 }
