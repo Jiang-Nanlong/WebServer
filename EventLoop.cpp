@@ -19,7 +19,7 @@ EventLoop::EventLoop() :
     else {
         t_loopInThisThread = this;
         wakeupChannel_->setReadCallback(bind(&EventLoop::handleRead, this));
-        wakeupChannel_->enableReading();  // wakeupChannel监听读事件
+        wakeupChannel_->enableReading();
     }
 }
 

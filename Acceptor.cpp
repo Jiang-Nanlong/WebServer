@@ -4,7 +4,8 @@
 Acceptor::Acceptor(EventLoop* loop, const InetAddress& addr) :
     loop_(loop),
     acceptSocket_(createNonblockSocket()),
-    acceptChannel_(acceptSocket_.getFd(), loop_) {
+    acceptChannel_(acceptSocket_.getFd(), loop_)
+{
     acceptSocket_.SetReuseAddr(true);
     acceptSocket_.SetReusePort(true);
     acceptSocket_.Bind(addr);

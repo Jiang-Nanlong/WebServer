@@ -1,16 +1,19 @@
 #pragma once
 
+#include <functional>
+#include <unistd.h>
+
+#include "Log.h"
 #include "noncopyable.h"
 #include "Socket.h"
 #include "Channel.h"
-#include <functional>
-#include "Log.h"
 #include "InetAddress.h"
-#include <unistd.h>
+
 using namespace std;
 
 class EventLoop;
 
+// 运行在mainloop，主要用于监听新的客户端连接
 class Acceptor :noncopyable {
 private:
     EventLoop* loop_;  // main loop
@@ -31,6 +34,4 @@ public:
     void setNewConnectionCallback(const NewConnectionCallback& cb);
 
     void listen();
-
-    
-}
+};

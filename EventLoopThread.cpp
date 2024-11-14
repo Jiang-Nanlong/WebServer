@@ -1,6 +1,5 @@
 #include "EventLoopThread.h"
 
-
 EventLoopThread::EventLoopThread(ThreadInitCallback& cb, const string& name) :
     loop_(nullptr),
     thread_(bind(&EventLoopThread::threadFunc, this), name),
@@ -22,7 +21,7 @@ EventLoop* EventLoopThread::startLoop() {
 
     {
         unique_lock<mutex> lock(mtx_);
-        cond_.wait(lock, [] {return loop_ != nullptr;});
+        cond_.wait(lock, [&] {return loop_ != nullptr;});
     }
     return loop_;
 }

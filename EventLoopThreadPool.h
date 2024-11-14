@@ -1,14 +1,16 @@
 #pragma once
 
-#include "noncopyable.h"
 #include <string>
 #include <memory>
 #include <vector>
+
+#include "noncopyable.h"
 #include "EventLoop.h"
 #include "EventLoopThread.h"
+
 using namespace std;
 
-class EventLoopThreadLoop :noncopyable {
+class EventLoopThreadPool :noncopyable {
 private:
     EventLoop* mainLoop_;   // 主reactor
     string name_;
@@ -21,9 +23,9 @@ private:
 
 
 public:
-    EventLoopThreadLoop(EventLoop* mainLoop, const string& name);
+    EventLoopThreadPool(EventLoop* mainLoop, const string& name);
 
-    ~EventLoopThreadLoop() = default;
+    ~EventLoopThreadPool() = default;
 
     void setThreadNum(int num);
 
@@ -34,4 +36,4 @@ public:
     EventLoop* getNextLoop();
 
     vector<EventLoop*> getAllLoops();
-}
+};
