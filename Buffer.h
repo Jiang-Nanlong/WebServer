@@ -61,7 +61,9 @@ public:
 
     string getLineAndPop();
 
-    ssize_t readFd(int fd);
+    ssize_t readFd(int fd, int* errorNum);  // 使用errorNum返回错误信息
+
+    ssize_t writeFd(int fd, int* errorNum);
 
     void clear();
 };

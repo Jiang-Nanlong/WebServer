@@ -7,7 +7,7 @@ const int Channel::KWriteEvent = EPOLLOUT;
 Channel::Channel(int fd, EventLoop* loop) :
     fd_(fd),
     lp_(loop),
-    status(-1),
+    status_(-1),
     readCallback_(nullptr),
     writeCallback_(nullptr),
     errorCallback_(nullptr),
@@ -16,15 +16,15 @@ Channel::Channel(int fd, EventLoop* loop) :
 }
 
 int Channel::getFd() {
-    return fd;
+    return fd_;
 }
 
 void Channel::setStatus(int flag) {
-    status = flag;
+    status_ = flag;
 }
 
 int Channel::getStatus() {
-    return status;
+    return status_;
 }
 
 void Channel::update() {

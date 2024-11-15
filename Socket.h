@@ -49,15 +49,15 @@ public:
 
     void Close();
 
-    void SetNonBlock();
+    void setNonBlock();
 
-    void ShutdownWrite();
+    void shutdownWrite();
 
-    void SetTcpNoDelay(bool on);
+    void setTcpNoDelay(bool on);
 
-    void SetReuseAddr(bool on);
+    void setReuseAddr(bool on);
 
-    void SetReusePort(bool on);
+    void setReusePort(bool on);
 
-    void SetKeepAlive(bool on);
+    void setKeepAlive(bool on);
 };

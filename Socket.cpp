@@ -78,32 +78,32 @@ void Socket::Close() {
     }
 }
 
-void Socket::SetNonBlock() {
+void Socket::setNonBlock() {
     int flag = fcntl(sockFd_, F_GETFL);
     fcntl(sockFd_, F_SETFL, flag | O_NONBLOCK);
 }
 
-void Socket::ShutdownWrite() {
+void Socket::shutdownWrite() {
     if (shutdown(sockFd_, SHUT_WR) < 0)
         LOG(ERROR, "shutdown write failed");
 }
 
-void Socket::SetTcpNoDelay(bool on) {
+void Socket::setTcpNoDelay(bool on) {
     int optval = on ? 1 : 0;
     setsockopt(sockFd_, IPPROTO_TCP, TCP_NODELAY, &optval, sizeof(optval));
 }
 
-void Socket::SetReuseAddr(bool on) {
+void Socket::setReuseAddr(bool on) {
     int optval = on ? 1 : 0;
     setsockopt(sockFd_, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
 }
 
-void Socket::SetReusePort(bool on) {
+void Socket::setReusePort(bool on) {
     int optval = on ? 1 : 0;
     setsockopt(sockFd_, SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval));
 }
 
-void Socket::SetKeepAlive(bool on) {
+void Socket::setKeepAlive(bool on) {
     int optval = on ? 1 : 0;
     setsockopt(sockFd_, SOL_SOCKET, SO_KEEPALIVE, &optval, sizeof(optval));
 }

@@ -116,6 +116,16 @@ ssize_t Buffer::readFd(int fd, int* errorNum) {
     return n;
 }
 
+ssize_t Buffer::writeFd(int fd, int* errorNum) {
+    ssize_t n = ::write(fd, readIndex(), readAbleSize());
+    if (n < 0)
+        *errorNum = errno;
+    else
+        moveReadOffset(n);
+
+    return n;
+}
+
 void Buffer::clear() {
     readIndex_ = 0;
     writeIndex_ = 0;
