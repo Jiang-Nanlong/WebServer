@@ -6,72 +6,62 @@
 #include <string>
 #include <cstring>
 #include <stdint.h>
+#include <sys/uio.h>
 using namespace std;
 
 #define BUFFER_DEFAULT_SIZE 1024
 
-// 用户态缓冲区,有一个读指针和写指针,这两个指针之间夹的是可以读写的数据,其余空间为空闲空间.写指针指向下一个可写的位置
-
+// 用户态缓冲区
 class Buffer {
 private:
-    vector<char> buf;
-    uint64_t read_index;
-    uint64_t write_index;
+    vector<char> buf_;
+    uint64_t readIndex_;
+    uint64_t writeIndex_;
 
 public:
-    Buffer() : read_index(0), write_index(0), buf(BUFFER_DEFAULT_SIZE) {}
+    Buffer(uint64_t buffersize = BUFFER_DEFAULT_SIZE) : readIndex_(0), writeIndex_(0), buf_(buffersize) {}
 
-    char* Begin() { return &*buf.begin(); }
+    ~Buffer() = default;
 
-    char* WriteIndex() { return Begin() + write_index; }
+    char* begin() { return &*buf_.begin(); }
 
-    char* ReadIndex() { return Begin() + read_index; }
+    char* writeIndex() { return begin() + writeIndex_; }
 
-    // 计算剩余空间
-    uint64_t WriteAbleSize() { return buf.size() - write_index; }
+    char* readIndex() { return begin() + readIndex_; }
 
-    // 获取缓冲区起始空闲空间大小
-    uint64_t FreeSpaceBeforeRead() { return read_index; }
+    uint64_t writeAbleSize() { return buf_.size() - writeIndex_; }
 
-    // 计算可读数据
-    uint64_t ReadAbleSize() { return write_index - read_index; }
+    uint64_t prependAbleSize() { return readIndex_; }
 
-    // 将读偏移向后移动
-    void MoveReadOffset(uint64_t len);
+    uint64_t readAbleSize() { return writeIndex_ - readIndex_; }
 
-    // 将写偏移向后移动
-    void MoveWriteOffset(uint64_t len);
+    void moveReadOffset(uint64_t len);
 
-    // 确保写指针之后的可写空间足够
-    void EnsureWriteSpace(uint64_t len);
+    void moveWriteOffset(uint64_t len);
 
-    // 写数据
-    void Write(const void* data, uint64_t len);
+    void ensureWriteSpace(uint64_t len);
 
-    void WriteAndPush(const void* data, uint64_t len);
+    void write(const void* data, uint64_t len);
 
-    void WriteString(const string& data);
+    void writeString(const string& data);
 
-    void WriteStringAndPush(const string& data);
+    void writeBuffer(Buffer& data);
 
-    void WriteBuffer(Buffer& data);
+    void read(void* buf_, uint64_t len);
 
-    void WriteBufferAndPush(Buffer& data);
+    void readAndPop(void* buf_, uint64_t len);
 
-    // 读数据
-    void Read(void* buf, uint64_t len);
+    string readAsString(uint64_t len);
 
-    void ReadAndPop(void* buf, uint64_t len);
+    string readAsStringAndPop(uint64_t len);
 
-    string ReadAsString(uint64_t len);
+    char* findCRLF();
 
-    string ReadAsStringAndPop(uint64_t len);
+    string getLine();
 
-    char* FindCRLF();
+    string getLineAndPop();
 
-    string GetLine();
+    ssize_t readFd(int fd);
 
-    string GetLineAndPop();
-
-    void Clear();
+    void clear();
 };

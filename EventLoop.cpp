@@ -53,14 +53,14 @@ void EventLoop::quit() {
         wakeup();
 }
 
-void EventLoop::runInLoop(TaskFunc& task) {
+void EventLoop::runInLoop(Functor& task) {
     if (isInLoopThread())
         task();
     else
         queueInLoop(task);
 }
 
-void EventLoop::queueInLoop(TaskFunc& task) {
+void EventLoop::queueInLoop(Functor& task) {
     {
         lock_guard<mutex> lock(mtx_);
         pendingFunctors_.emplace_back(task);

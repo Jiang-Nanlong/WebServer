@@ -1,114 +1,122 @@
 #include "Buffer.h"
 
-void Buffer::MoveReadOffset(uint64_t len) {
+void Buffer::moveReadOffset(uint64_t len) {
     if (len == 0)
         return;
-    assert(len <= ReadAbleSize());
-    read_index += len;
+    if (len <= readAbleSize())
+        readIndex_ += len;
 }
 
-void Buffer::MoveWriteOffset(uint64_t len) {
-    assert(len <= WriteAbleSize());
-    write_index += len;
+void Buffer::moveWriteOffset(uint64_t len) {
+    if (len <= writeAbleSize())
+        writeIndex_ += len;
 }
 
-void Buffer::EnsureWriteSpace(uint64_t len) {
-    // 如果末尾空闲空间大小足够，直接返回
-    if (WriteAbleSize() >= len) {
+void Buffer::ensureWriteSpace(uint64_t len) {
+    if (writeAbleSize() >= len) {
         return;
-    } if (len <= WriteAbleSize() + FreeSpaceBeforeRead()) { // 如果只考虑末尾空间不够,就再加上前边的空闲空间
+    } if (len <= writeAbleSize() + prependAbleSize()) {
 
-        uint64_t len = ReadAbleSize();
-        copy(ReadIndex(), ReadIndex() + len, Begin());
-        read_index = 0;
-        write_index = len;
+        uint64_t len = readAbleSize();
+        copy(readIndex(), readIndex() + len, begin());
+        readIndex_ = 0;
+        writeIndex_ = len;
     }
     else {
-        // 总体空间不够，则需要扩容，不移动数据，直接给写偏移之后扩容足够空间即可
-        buf.resize(write_index + len);
+        buf_.resize(writeIndex_ + len);
     }
 }
 
-void Buffer::Write(const void* data, uint64_t len) {
+void Buffer::write(const void* data, uint64_t len) {
     if (len == 0)
         return;
-    EnsureWriteSpace(len);
+    ensureWriteSpace(len);
     const char* d = (const char*)data;
-    copy(d, d + len, WriteIndex());
+    copy(d, d + len, writeIndex());
+    moveWriteOffset(len);
 }
 
-void Buffer::WriteAndPush(const void* data, uint64_t len) {
-    Write(data, len);
-    MoveWriteOffset(len);
+void Buffer::writeString(const string& data) {
+    return write(data.c_str(), data.size());
 }
 
-void Buffer::WriteString(const string& data) {
-    return Write(data.c_str(), data.size());
+void Buffer::writeBuffer(Buffer& data) {
+    return write(data.readIndex(), data.readAbleSize());
 }
 
-void Buffer::WriteStringAndPush(const string& data) {
-    WriteString(data);
-    MoveWriteOffset(data.size());
+void Buffer::read(void* buf_, uint64_t len) {
+    if (len <= readAbleSize())
+        copy(readIndex(), readIndex() + len, (char*)buf_);
 }
 
-void Buffer::WriteBuffer(Buffer& data) {
-    return Write(data.ReadIndex(), data.ReadAbleSize());
+void Buffer::readAndPop(void* buf_, uint64_t len) {
+    read(buf_, len);
+    moveReadOffset(len);
 }
 
-void Buffer::WriteBufferAndPush(Buffer& data) {
-    WriteBuffer(data);
-    MoveWriteOffset(data.ReadAbleSize());
-}
-
-void Buffer::Read(void* buf, uint64_t len) {
-    assert(len <= ReadAbleSize());
-    copy(ReadIndex(), ReadIndex() + len, (char*)buf);
-}
-
-void Buffer::ReadAndPop(void* buf, uint64_t len) {
-    Read(buf, len);
-    MoveReadOffset(len);
-}
-
-string Buffer::ReadAsString(uint64_t len) {
-    assert(len <= ReadAbleSize());
+string Buffer::readAsString(uint64_t len) {
+    if (len > readAbleSize())
+        len = readAbleSize();
     string str;
     str.resize(len);
-    Read(&str[0], len);
+    read(&str[0], len);
     return str;
 }
 
-string Buffer::ReadAsStringAndPop(uint64_t len) {
-    assert(len <= ReadAbleSize());
-    string str = ReadAsString(len);
-    MoveReadOffset(len);
+string Buffer::readAsStringAndPop(uint64_t len) {
+    if (len > readAbleSize())
+        len = readAbleSize();
+    string str = readAsString(len);
+    moveReadOffset(len);
     return str;
 }
 
-char* Buffer::FindCRLF() {
-    char* res = (char*)memchr(ReadIndex(), '\n', ReadAbleSize());
+char* Buffer::findCRLF() {
+    char* res = (char*)memchr(readIndex(), '\n', readAbleSize());
     return res;
 }
 
-string Buffer::GetLine() {
-    char* pos = FindCRLF();
+string Buffer::getLine() {
+    char* pos = findCRLF();
     if (pos != NULL) {
-        return ReadAsString(pos - ReadIndex() + 1);
+        return readAsString(pos - readIndex() + 1);
     }
-    else if (ReadAbleSize() > 0) {
-        return ReadAsString(ReadAbleSize());
+    else if (readAbleSize() > 0) {
+        return readAsString(readAbleSize());
     }
     return "";
 }
 
-string Buffer::GetLineAndPop() {
-    string str = GetLine();
-    MoveReadOffset(str.size());
+string Buffer::getLineAndPop() {
+    string str = getLine();
+    moveReadOffset(str.size());
     return str;
 }
 
-void Buffer::Clear() {
-    // 只需要将偏移量归0即可
-    read_index = 0;
-    write_index = 0;
+ssize_t Buffer::readFd(int fd, int* errorNum) {
+    char extrabuf[65536]; //64k
+    struct iovec vec[2];
+    vec[0].iov_base = writeIndex();
+    int writeAbleLen = writeAbleSize();
+    vec[0].iov_len = writeAbleLen;
+    vec[1].iov_base = extrabuf;
+    vec[1].iov_len = sizeof(extrabuf);
+
+    ssize_t n = readv(fd, vec, 2);
+    if (n < 0)
+        *errorNum = errno;
+    else if (n <= writeAbleLen) {
+        writeIndex_ += n;
+    }
+    else {
+        writeIndex_ = buf_.size();
+        write((void*)extrabuf, n - writeAbleLen);
+    }
+
+    return n;
+}
+
+void Buffer::clear() {
+    readIndex_ = 0;
+    writeIndex_ = 0;
 }

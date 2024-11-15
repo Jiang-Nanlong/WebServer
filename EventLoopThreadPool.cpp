@@ -26,9 +26,10 @@ void EventLoopThreadPool::start(const ThreadInitCallback& cb) {
         cb(mainLoop_);
 }
 
+// 轮训选择下一个subreactor，感觉后边可以改成负载均衡的
 EventLoop* EventLoopThreadPool::getNextLoop() {
     EventLoop* loop = mainLoop_;
-    if (threadNum_ == 0) {
+    if (threadNum_ != 0) {
         loop = loops_[next_];
         next_ = (next_ + 1) % threadNum_;
     }

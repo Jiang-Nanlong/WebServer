@@ -39,8 +39,8 @@ void Acceptor::handleRead() {
     InetAddress addr;
     int clintfd = acceptSocket_.Accept(addr);
     if (clintfd > 0) {
-        if (newConnectionCallback_)  // 如果设置了函数，则分发；否则关闭
-            newConnectionCallback_(clintfd, addr);
+        if (newConnectionCallback_)
+            newConnectionCallback_(clintfd, addr);  // 轮训选择一个subreactor，把新链接分发个它，它负责之后的任务
         else
             close(clintfd);
     }

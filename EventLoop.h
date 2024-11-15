@@ -48,9 +48,9 @@ public:
 
     void quit();
 
-    void runInLoop(TaskFunc& task);
+    void runInLoop(Functor& task);
 
-    void queueInLoop(TaskFunc& task);
+    void queueInLoop(Functor& task);
 
     void updateChannel(Channel* ch);
 

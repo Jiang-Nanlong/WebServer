@@ -108,8 +108,3 @@ void Socket::SetKeepAlive(bool on) {
     setsockopt(sockFd_, SOL_SOCKET, SO_KEEPALIVE, &optval, sizeof(optval));
 }
 
-void Socket::SetNonBlock() {
-    int flags = fcntl(sockFd_, F_GETFL, 0);
-    flags |= O_NONBLOCK;
-    fcntl(sockFd_, F_SETFL, flags);
-}

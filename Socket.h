@@ -60,6 +60,4 @@ public:
     void SetReusePort(bool on);
 
     void SetKeepAlive(bool on);
-
-    void SetNonBlock(bool on);
 };

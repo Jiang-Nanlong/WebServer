@@ -4,12 +4,14 @@
 #include <unordered_map>
 #include <string>
 #include <atomic>
+#include <functional>
 
 #include "EventLoop.h"
 #include "Acceptor.h"
 #include "EventLoopThreadPool.h"
 #include "Connection"
 #include "Timestamp.h"
+#include "Log.h"
 
 using namespace std;
 
@@ -49,7 +51,7 @@ private:
     void removeConnectionInLoop(const ConnectionPtr& conn);
 
 public:
-    TcpServer(EventLoop* loop, const InetAddress& addr);
+    TcpServer(EventLoop* loop, const InetAddress& addr, const string& name);
 
     ~TcpServer();
 
