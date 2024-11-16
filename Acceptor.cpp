@@ -3,7 +3,7 @@
 
 Acceptor::Acceptor(EventLoop* loop, const InetAddress& addr) :
     loop_(loop),
-    acceptSocket_(createNonblockSocket()),
+    acceptSocket_(createNonblockSocket()),  // 监听socket是非阻塞的
     acceptChannel_(acceptSocket_.getFd(), loop_)
 {
     acceptSocket_.SetReuseAddr(true);

@@ -15,14 +15,12 @@ using namespace std;
 #define MAX_EVENTS 1024
 
 class Poller :noncopyable {
+    using ChannelMap = unordered_map<int, Channel*>;
+    using EventList = vector<struct epoll_event>;
 private:
     int epollFd_;
-    using ChannelMap = unordered_map<int, Channel*>;
     ChannelMap channels_;
-
-    using EventList = vector<struct epoll_event>;
     EventList events_;
-
     static const int kInitEventListSize = 16;   // events_的初始大小
 
     static const int KNew;

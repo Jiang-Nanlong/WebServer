@@ -17,23 +17,22 @@ using namespace std;
 
 // 把之前所有的结构部件整合起来
 class TcpServer {
-private:
-    EventLoop* mainLoop_;  // main loop
-    unique_ptr<Acceptor> acceptor_;
-    unique_ptr<EventLoopThreadPool> threadPool_;
-
-    using ConnectionPtr = shared_ptr<Connection>;
-    using ConnectionMap = unordered_map<string, ConnectionPtr>;
-    ConnectionMap connections_;   // 保存所有链接
-
-    const string ipPort_;  // ip:port
-    const string name_;
-
     using ConnectionCallback = function<void(const ConnectionPtr&)>;
     using CloseCallback = function<void(const ConnectionPtr&)>;
     using WriteCompleteCallback = function<void(const ConnectionPtr&)>;
     using MessageCallback = function<void(const ConnectionPtr&, Buffer*, Timestamp)>;
     using ThreadInitCallback = function<void(EventLoop*)>;
+    using ConnectionPtr = shared_ptr<Connection>;
+    using ConnectionMap = unordered_map<string, ConnectionPtr>;
+private:
+    EventLoop* mainLoop_;  // main loop
+    unique_ptr<Acceptor> acceptor_;
+    unique_ptr<EventLoopThreadPool> threadPool_;
+
+    ConnectionMap connections_;   // 保存所有链接
+
+    const string ipPort_;  // ip:port
+    const string name_;
 
     ConnectionCallback connectionCallback_;         // 有新连接时的回调
     WriteCompleteCallback writeCompleteCallback_;   // 消息发送完以后的回调

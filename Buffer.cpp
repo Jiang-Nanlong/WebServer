@@ -93,6 +93,7 @@ string Buffer::getLineAndPop() {
     return str;
 }
 
+// 从socket读数据到缓冲区
 ssize_t Buffer::readFd(int fd, int* errorNum) {
     char extrabuf[65536]; //64k
     struct iovec vec[2];
@@ -116,6 +117,7 @@ ssize_t Buffer::readFd(int fd, int* errorNum) {
     return n;
 }
 
+// 把缓冲区中的数据写到socket
 ssize_t Buffer::writeFd(int fd, int* errorNum) {
     ssize_t n = ::write(fd, readIndex(), readAbleSize());
     if (n < 0)

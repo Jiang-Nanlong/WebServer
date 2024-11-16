@@ -16,6 +16,7 @@ using namespace std;
 
 // Reactor
 class EventLoop :noncopyable {
+    using Functor = function<void()>;
 private:
     const std::thread::id threadId_;   // 记录创建EventLoop对象的线程id，Channel上发生的事件只能在自己的eventloop线程中处理
     unique_ptr<Poller> poller_;
@@ -23,7 +24,6 @@ private:
     int wakeupFd_;
     unique_ptr<Channel> wakeupChannel_;
 
-    using Functor = function<void()>;
     vector<Functor> pendingFunctors_;
     mutex mtx_;
 

@@ -46,11 +46,59 @@ void Connection::setState(State s) {
     state_ = s;
 }
 
+void Connection::send(const string& str) {
+    if (state_ == kConnecting) {
+        loop_->runInLoop(bind(&Connection::sendInLoop, this, str.c_str(), str.size()));
+    }
+}
+
+void Connection::sendInLoop(const void* data, size_t len) {
+    if (state_ == kDisconnected) {
+        LOG(ERROR, "send failed, connection disconnected");
+        return;
+    }
+    int wrote = 0;
+    int remaining = len;
+    bool errflag = false;
+    if (!channel_->isWriteAble() && outputBuffer_.readAbleSize() == 0) {
+        int wrote = write(channel_->getFd(), data, len);
+        if (wrote >= 0) {
+            remaining = len - wrote;
+            if (remaining == 0) {
+                if (writeCompleteCallback_)
+                    loop_->queueInLoop(bind(writeCompleteCallback_, shared_from_this()));
+            }
+        }
+        else {
+            wrote = 0;
+            if (errno == EWOULDBLOCK || errno == EAGAIN) {  // EAGAIN和EWOULDBLOCK是非阻塞正常返回
+                LOG(ERROR, "Connection sendInLoop failed");
+            }
+            else if (errno == EPIPE || errno == ECONNRESET) {
+                errflag = true;
+            }
+        }
+    }
+
+    // 没有错误发生并且数据没有一次性发送完
+    if (!errflag && remaining) {
+        int spacetosend = outputBuffer_.readAbleSize();
+        if (spacetosend + remaining >= highWaterMark_ && spacetosend < highWaterMark_)
+            if (highWaterMarkCallback_)
+                loop_->queueInLoop(bind(highWaterMarkCallback_, shared_from_this(), spacetosend + remaining));
+
+        outputBuffer_.write(data + wrote, remaining);
+        if (!channel_->isWriteAble())  // 注册EPOLLOUT事件，socket下一次可写的时候把outputBuffer_缓冲区中的数据继续发送出去
+            channel_->enableWriting();
+    }
+
+}
+
 void Connection::handleRead() {
     int Error = 0;
     int n = inputBuffer_.readFd(channel_->getFd(), &Error);
     if (n > 0)
-        messageCallback_(shared_from_this(), &inputBuffer_);  // shared_from_this()会延长对象的生存周期相比于this
+        messageCallback_(shared_from_this(), &inputBuffer_);  // messageCallback_进行业务处理
     else if (n == 0)
         handleClose();
     else {
@@ -63,15 +111,15 @@ void Connection::handleRead() {
 void Connection::handleWrite() {
     if (channel_->isWriteAble()) {
         int Error = 0;
-        int n = outputBuffer_.writeFd(channel_->getFd(), &Error);  // 感觉这里的逻辑有点问题，handleWrite被注册到channel_的写回调了，但是当channel_调用这个函数的时候，又会向channel_绑定的文件描述符写数据
+        int n = outputBuffer_.writeFd(channel_->getFd(), &Error);
         if (n > 0) {
-            if (outputBuffer_.readAbleSize() == 0) {
-                channel_->disableAll();
+            if (outputBuffer_.readAbleSize() == 0) {  // 输出缓冲区中的数据已经全部写完
+                channel_->disableWriting();
                 if (writeCompleteCallback_)
-                    loop_->queueInLoop(bind(&Connection::writeCompleteCallback_, shared_from_this()));
+                    loop_->queueInLoop(bind(writeCompleteCallback_, shared_from_this()));
+                if (state_ == kConnecting)
+                    shutdownInLoop();
             }
-            if (state_ == kConnecting)
-                shutdownInLoop();
         }
         else
             LOG(ERROR, "Connection handleWrite failed");
@@ -84,12 +132,11 @@ void Connection::handleClose() {
     setState(kDisconnected);
     channel_->disableAll();
 
-    ConnectionPtr connPtr(shared_from_this());
     if (connectionCallback_)
-        connectionCallback_(connPtr);
+        connectionCallback_(shared_from_this());
 
     if (closeCallback_)
-        closeCallback_(connPtr);
+        closeCallback_(shared_from_this());
 }
 
 void Connection::handleError() {
@@ -104,3 +151,33 @@ void Connection::handleError() {
     }
     LOG(ERROR, "Connection handleError: ", err);
 }
+
+void Connection::shutdown() {
+    if (state_ == kConnected) {
+        setState(kDisconnecting);
+        loop_->runInLoop(bind(&Connection::shutdownInLoop, this));
+    }
+}
+
+void Connection::shutdownInLoop() {
+    if (!channel_->isWriteAble())
+        socket_->shutdownWrite();
+}
+
+void Connection::connectEstablished() {
+    setState(kConnected);
+    channel_->enableReading();
+
+    if (connectionCallback_)
+        connectionCallback_(shared_from_this());
+}
+
+void Connection::connectDestroyed() {
+    if (state_ == kConnected) {
+        setState(kDisconnected);
+        channel_->disableAll();
+        connectionCallback_(shared_from_this());
+    }
+    channel_->remove();
+}
+

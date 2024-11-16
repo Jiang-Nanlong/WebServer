@@ -13,13 +13,13 @@ using namespace std;
 class EventLoop;
 
 class Channel :noncopyable {
+    using EventCallback = function <void()>;
 private:
     int fd_;
     uint32_t events_ = 0;
     uint32_t revents_ = 0;
     unique_ptr<EventLoop> lp_;   // 只需要修改每个Channel实例就能从EventLoop到Poller都修改
 
-    using EventCallback = function <void()>;
     EventCallback readCallback_;
     EventCallback writeCallback_;
     EventCallback errorCallback_;

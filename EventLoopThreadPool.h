@@ -11,6 +11,7 @@
 using namespace std;
 
 class EventLoopThreadPool :noncopyable {
+    using ThreadInitCallback = function<void(EventLoop*)>;
 private:
     EventLoop* mainLoop_;   // 主reactor
     string name_;
@@ -18,10 +19,6 @@ private:
     int next_;
     vector<unique_ptr<EventLoopThread>> threads_;
     vector<EventLoop*> loops_;
-
-    using ThreadInitCallback = function<void(EventLoop*)>;
-
-
 public:
     EventLoopThreadPool(EventLoop* mainLoop, const string& name);
 
