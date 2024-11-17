@@ -79,4 +79,9 @@ public:
     void connectEstablished();
 
     void connectDestroyed();
+
+    const string& getName() const;
+
+    EventLoop* getLoop() const;
+
 }

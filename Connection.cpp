@@ -89,7 +89,7 @@ void Connection::sendInLoop(const void* data, size_t len) {
 
         outputBuffer_.write(data + wrote, remaining);
         if (!channel_->isWriteAble())  // 注册EPOLLOUT事件，socket下一次可写的时候把outputBuffer_缓冲区中的数据继续发送出去
-            channel_->enableWriting();
+            channel_->enableWriting();   // 所以，channel只要对EPOLLOUT事件感兴趣，就说明outputBuffer_缓冲区中还有数据没有被发送完
     }
 
 }
@@ -117,7 +117,7 @@ void Connection::handleWrite() {
                 channel_->disableWriting();
                 if (writeCompleteCallback_)
                     loop_->queueInLoop(bind(writeCompleteCallback_, shared_from_this()));
-                if (state_ == kConnecting)
+                if (state_ == kDisconnecting)  // 说明调用了shutdown函数，但是在调用shutdowninloop的时候发现outputBuffer_缓冲区中还有数据所以没有立即停止，而是调用handlewrite继续写，写完以后才在这里再次调用shutdowninloop
                     shutdownInLoop();
             }
         }
@@ -160,7 +160,7 @@ void Connection::shutdown() {
 }
 
 void Connection::shutdownInLoop() {
-    if (!channel_->isWriteAble())
+    if (!channel_->isWriteAble())  // 说明outputBuffer_缓冲区中的数据都已经发送完了
         socket_->shutdownWrite();
 }
 
@@ -179,5 +179,13 @@ void Connection::connectDestroyed() {
         connectionCallback_(shared_from_this());
     }
     channel_->remove();
+}
+
+const string& Connection::getName() const {
+    return name_;
+}
+
+EventLoop* Connection::getLoop() const {
+    return loop_;
 }
 

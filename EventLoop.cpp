@@ -12,7 +12,7 @@ EventLoop::EventLoop() :
     isProcessHandleEvents_(false),
     isProcessPendingFunctors_(false),
     isQuit_(false),
-    wakeupChannel_(new Channel(this, wakeupFd_))
+    wakeupChannel_(new Channel(wakeupFd_, this))
 {
     if (t_loopInThisThread)
         LOG(FATAL, "another eventloop is exist:"t_loopInThisThread);

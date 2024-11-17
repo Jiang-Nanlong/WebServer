@@ -5,25 +5,27 @@
 #include <string>
 #include <atomic>
 #include <functional>
+#include <stdio.h>
 
 #include "EventLoop.h"
 #include "Acceptor.h"
 #include "EventLoopThreadPool.h"
-#include "Connection"
+#include "Connection.h"
 #include "Timestamp.h"
 #include "Log.h"
+#include "InetAddress.h"
 
 using namespace std;
 
 // 把之前所有的结构部件整合起来
 class TcpServer {
+    using ConnectionPtr = shared_ptr<Connection>;
+    using ConnectionMap = unordered_map<string, ConnectionPtr>;
     using ConnectionCallback = function<void(const ConnectionPtr&)>;
     using CloseCallback = function<void(const ConnectionPtr&)>;
     using WriteCompleteCallback = function<void(const ConnectionPtr&)>;
     using MessageCallback = function<void(const ConnectionPtr&, Buffer*, Timestamp)>;
     using ThreadInitCallback = function<void(EventLoop*)>;
-    using ConnectionPtr = shared_ptr<Connection>;
-    using ConnectionMap = unordered_map<string, ConnectionPtr>;
 private:
     EventLoop* mainLoop_;  // main loop
     unique_ptr<Acceptor> acceptor_;
@@ -34,16 +36,16 @@ private:
     const string ipPort_;  // ip:port
     const string name_;
 
-    ConnectionCallback connectionCallback_;         // 有新连接时的回调
-    WriteCompleteCallback writeCompleteCallback_;   // 消息发送完以后的回调
-    MessageCallback messageCallback_;               // 有读写消息时的回调
+    ConnectionCallback connectionCallback_;
+    WriteCompleteCallback writeCompleteCallback_;
+    MessageCallback messageCallback_;
     ThreadInitCallback threadInitCallback_;         // EventLoopThread::threadFunc()中loop线程初始化时的回调
 
     atomic_int started_;
 
     int nextConnId_;
 
-    void newConnection(int sockfd, const InetAddress& addr);
+    void newConnection(int sockfd, const InetAddress& remoteaddr);
 
     void removeConnection(const ConnectionPtr& conn);
 

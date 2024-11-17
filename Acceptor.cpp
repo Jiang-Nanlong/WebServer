@@ -34,7 +34,6 @@ int Acceptor::createNonblockSocket() {
     return sockfd;
 }
 
-// 当有新客户端申请链接的时候被调用
 void Acceptor::handleRead() {
     InetAddress addr;
     int clintfd = acceptSocket_.Accept(addr);

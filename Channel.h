@@ -3,12 +3,12 @@
 #include <stdint.h>
 #include <functional>
 #include <sys/epoll.h>
+#include <memory>
 
 #include "noncopyable.h"
 
 using namespace std;
 
-// 一个Channel对象代表着一个可被epoll监听的文件描述符，之所以使用Channel类是为了在向epoll中注册时使用epoll_event.data.ptr可以携带更多文件描述符的信息
 
 class EventLoop;
 
@@ -34,7 +34,7 @@ private:
 public:
     Channel(int fd, EventLoop* loop);
 
-    ~Channel() {}
+    ~Channel() = default;
 
     int getFd();
 

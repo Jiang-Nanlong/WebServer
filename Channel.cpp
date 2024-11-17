@@ -81,14 +81,14 @@ void Channel::setCloseCallback(EventCallback fn) {
 }
 
 void Channel::handleEvent() {
-    if (revents_ & EPOLLHUP && !(revents_ & EPOLLIN)) {
-        if (closeCallback_)closeCallback_();
+    if (revents_ & EPOLLHUP && !(revents_ & EPOLLIN)) {  // EPOLLHUP客户端连接关闭
+        if (closeCallback_) closeCallback_();
     }
     else if (revents_ & (EPOLLIN | EPOLLRDHUP | EPOLLPRI)) {
-        if (readCallback_)readCallback_();
+        if (readCallback_) readCallback_();
     }
     else if (revents_ & EPOLLOUT) {
-        if (writeCallback_)writeCallback_();
+        if (writeCallback_) writeCallback_();
     }
     else if (revents_ & EPOLLERR) {
         if (errorCallback_)errorCallback_();
