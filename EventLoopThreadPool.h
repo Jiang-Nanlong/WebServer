@@ -7,16 +7,15 @@
 #include "noncopyable.h"
 #include "EventLoop.h"
 #include "EventLoopThread.h"
+#include "Callbacks.h"
 
 using namespace std;
 
 class EventLoopThreadPool :noncopyable {
-    using ThreadInitCallback = function<void(EventLoop*)>;
 private:
     EventLoop* mainLoop_;   // 主reactor
     string name_;
     int threadNum_;         // 从线程数量
-    int next_;
     vector<unique_ptr<EventLoopThread>> threads_;
     vector<EventLoop*> loops_;
 public:
@@ -26,7 +25,7 @@ public:
 
     void setThreadNum(int num);
 
-    const string& getName() { return name_; }
+    const string& getName() const { return name_; }
 
     void start(ThreadInitCallback& cb);
 

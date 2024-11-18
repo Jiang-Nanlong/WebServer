@@ -91,7 +91,7 @@ void Channel::handleEvent() {
         if (writeCallback_) writeCallback_();
     }
     else if (revents_ & EPOLLERR) {
-        if (errorCallback_)errorCallback_();
+        if (errorCallback_) errorCallback_();
         return;
     }
 }

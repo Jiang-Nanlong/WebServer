@@ -28,10 +28,10 @@ void Socket::Connect(const InetAddress& addr) {
 
 int Socket::Accept(InetAddress& addr) {
     struct sockaddr_in temp;
-    socklen_t len;
+    socklen_t len = sizeof(sockaddr_in);
     memset(&temp, 0, sizeof(sockaddr_in));
 
-    int clnt_sock = accept(sockFd_, (struct sockaddr*)&temp, &len);
+    int clnt_sock = accept4(sockFd_, (struct sockaddr*)&temp, &len, SOCK_NONBLOCK | SOCK_CLOEXEC);
     if (clnt_sock < 0) {
         LOG(ERROR, "socket accept failed");
         return -1;

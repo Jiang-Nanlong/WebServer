@@ -1,5 +1,11 @@
 #include "Buffer.h"
 
+Buffer::Buffer(uint64_t buffersize) :
+    readIndex_(0),
+    writeIndex_(0),
+    buf_(buffersize) {
+}
+
 void Buffer::moveReadOffset(uint64_t len) {
     if (len == 0)
         return;

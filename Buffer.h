@@ -19,7 +19,7 @@ private:
     uint64_t writeIndex_;
 
 public:
-    Buffer(uint64_t buffersize = BUFFER_DEFAULT_SIZE) : readIndex_(0), writeIndex_(0), buf_(buffersize) {}
+    Buffer(uint64_t buffersize = BUFFER_DEFAULT_SIZE);
 
     ~Buffer() = default;
 

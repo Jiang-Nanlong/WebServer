@@ -27,7 +27,7 @@ public:
 
     ~Socket() { Close(); };
 
-    int getFd() const { return sockFd_; }
+    const int getFd() const { return sockFd_; }
 
     void Create();
 

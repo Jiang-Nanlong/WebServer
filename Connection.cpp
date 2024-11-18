@@ -9,7 +9,6 @@ Connection::Connection(EventLoop* loop,
     name_(name),
     socket_(new Socket(sockfd)),
     channel_(new Channel(sockfd, loop_)),
-    reading_(true),
     state_(kConnecting),
     localAddr_(localaddr),
     remoteAddr_(remoteaddr),
@@ -47,7 +46,7 @@ void Connection::setState(State s) {
 }
 
 void Connection::send(const string& str) {
-    if (state_ == kConnecting) {
+    if (state_ == kConnected) {
         loop_->runInLoop(bind(&Connection::sendInLoop, this, str.c_str(), str.size()));
     }
 }
@@ -94,11 +93,41 @@ void Connection::sendInLoop(const void* data, size_t len) {
 
 }
 
+// 并不是真正的关闭连接，而是把链接的状态修改为disconnecting，并设置半关闭
+void Connection::shutdown() {
+    if (state_ == kConnected) {
+        setState(kDisconnecting);
+        loop_->runInLoop(bind(&Connection::shutdownInLoop, this));
+    }
+}
+
+void Connection::shutdownInLoop() {
+    if (!channel_->isWriteAble())  // 说明outputBuffer_缓冲区中的数据都已经发送完了
+        socket_->shutdownWrite();
+}
+
+void Connection::connectEstablished() {
+    setState(kConnected);
+    channel_->enableReading();
+
+    if (connectionCallback_)
+        connectionCallback_(shared_from_this());
+}
+
+void Connection::connectDestroyed() {
+    if (state_ == kConnected) {
+        setState(kDisconnected);
+        channel_->disableAll();
+        connectionCallback_(shared_from_this());
+    }
+    channel_->remove();
+}
+
 void Connection::handleRead() {
     int Error = 0;
     int n = inputBuffer_.readFd(channel_->getFd(), &Error);
     if (n > 0)
-        messageCallback_(shared_from_this(), &inputBuffer_);  // messageCallback_进行业务处理
+        messageCallback_(shared_from_this(), &inputBuffer_);
     else if (n == 0)
         handleClose();
     else {
@@ -109,7 +138,7 @@ void Connection::handleRead() {
 }
 
 void Connection::handleWrite() {
-    if (channel_->isWriteAble()) {
+    if (channel_->isWriteAble()) {  // 如果Channel关心写事件，说明发送缓冲区中有数据没有发送完，就发送这些数据
         int Error = 0;
         int n = outputBuffer_.writeFd(channel_->getFd(), &Error);
         if (n > 0) {
@@ -152,40 +181,23 @@ void Connection::handleError() {
     LOG(ERROR, "Connection handleError: ", err);
 }
 
-void Connection::shutdown() {
-    if (state_ == kConnected) {
-        setState(kDisconnecting);
-        loop_->runInLoop(bind(&Connection::shutdownInLoop, this));
-    }
-}
-
-void Connection::shutdownInLoop() {
-    if (!channel_->isWriteAble())  // 说明outputBuffer_缓冲区中的数据都已经发送完了
-        socket_->shutdownWrite();
-}
-
-void Connection::connectEstablished() {
-    setState(kConnected);
-    channel_->enableReading();
-
-    if (connectionCallback_)
-        connectionCallback_(shared_from_this());
-}
-
-void Connection::connectDestroyed() {
-    if (state_ == kConnected) {
-        setState(kDisconnected);
-        channel_->disableAll();
-        connectionCallback_(shared_from_this());
-    }
-    channel_->remove();
-}
-
 const string& Connection::getName() const {
     return name_;
 }
 
 EventLoop* Connection::getLoop() const {
     return loop_;
+}
+
+bool Connection::isConnected() {
+    return state_ == kConnected;
+}
+
+const InetAddress& Connection::getLocalAddress() const {
+    return localAddr_;
+}
+
+const InetAddress& Connection::getRemoteAddress() const {
+    return remoteAddr_;
 }
 

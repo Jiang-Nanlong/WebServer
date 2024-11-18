@@ -11,12 +11,12 @@
 #include "noncopyable.h"
 #include "Poller.h"
 #include "Channel.h"
+#include "Callbacks.h"
 
 using namespace std;
 
 // Reactor
 class EventLoop :noncopyable {
-    using Functor = function<void()>;
 private:
     const std::thread::id threadId_;   // 记录创建EventLoop对象的线程id，Channel上发生的事件只能在自己的eventloop线程中处理
     unique_ptr<Poller> poller_;
@@ -39,6 +39,8 @@ public:
     EventLoop();
 
     ~EventLoop();
+
+    uint32_t getChannelNum() const;
 
     void handleRead();
 

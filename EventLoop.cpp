@@ -5,14 +5,14 @@ __thread EventLoop* t_loopInThisThread = nullptr;
 const int kPollTimeMs = 10000;   // epoll_wait超时时间
 
 EventLoop::EventLoop() :
-    isLooping_(false),
     threadId_(std::this_thread::get_id()),
     wakeupFd_(createWakeupFd()),
+    wakeupChannel_(new Channel(wakeupFd_, this)),
     poller_(new Poller()),
+    isLooping_(false),
     isProcessHandleEvents_(false),
     isProcessPendingFunctors_(false),
-    isQuit_(false),
-    wakeupChannel_(new Channel(wakeupFd_, this))
+    isQuit_(false)
 {
     if (t_loopInThisThread)
         LOG(FATAL, "another eventloop is exist:"t_loopInThisThread);
@@ -28,6 +28,10 @@ EventLoop::~EventLoop() {
     wakeupChannel_->remove();
     close(wakeupFd_);
     t_loopInThisThread = nullptr;
+}
+
+uint32_t EventLoop::getChannelNum() const {
+    return poller_->getChannelNum();
 }
 
 void EventLoop::handleRead() {
@@ -49,7 +53,7 @@ void EventLoop::wakeup() {
 void EventLoop::quit() {
     isQuit_ = true;
 
-    if (!isInLoopThread())  // 在其他线程中可以终止当前线程
+    if (!isInLoopThread())
         wakeup();
 }
 

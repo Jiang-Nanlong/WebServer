@@ -2,7 +2,7 @@
 
 atomic_int threadNum_(0);
 
-Thread::Thread(ThreadFunc& func, const string& name) :
+Thread::Thread(EventCallback& func, const string& name) :
     threadId_(0),
     name_(name),
     func_(func),

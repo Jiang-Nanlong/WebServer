@@ -14,7 +14,8 @@ TcpServer::TcpServer(EventLoop* loop, const InetAddress& addr, const string& nam
     threadPool_(new EventLoopThreadPool(mainLoop_, name_)),
     connectionCallback_(),
     messageCallback_(),
-    nextConnId_(1)
+    nextConnId_(1),
+    started_(0)
 {
     acceptor_->setNewConnectionCallback(bind(&TcpServer::newConnection, this, std::placeholders::_1, std::placeholders::_2));
 }
@@ -61,7 +62,7 @@ void TcpServer::newConnection(int sockfd, const InetAddress& remoteaddr) {
     ++nextConnId_;
     string connName = name_ + buf;
 
-    sockaddr_in local;
+    struct sockaddr_in local;
     int len = sizeof(sockaddr_in);
     memset(&local, 0, len);
     if (getsockname(sockfd, (struct sockaddr*)&local, &len) < 0)

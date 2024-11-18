@@ -3,7 +3,7 @@
 
 Acceptor::Acceptor(EventLoop* loop, const InetAddress& addr) :
     loop_(loop),
-    acceptSocket_(createNonblockSocket()),  // 监听socket是非阻塞的
+    acceptSocket_(createNonblockSocket()),
     acceptChannel_(acceptSocket_.getFd(), loop_)
 {
     acceptSocket_.SetReuseAddr(true);
@@ -39,7 +39,7 @@ void Acceptor::handleRead() {
     int clintfd = acceptSocket_.Accept(addr);
     if (clintfd > 0) {
         if (newConnectionCallback_)
-            newConnectionCallback_(clintfd, addr);  // 轮训选择一个subreactor，把新链接分发个它，它负责之后的任务
+            newConnectionCallback_(clintfd, addr);
         else
             close(clintfd);
     }

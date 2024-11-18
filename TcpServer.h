@@ -14,18 +14,13 @@
 #include "Timestamp.h"
 #include "Log.h"
 #include "InetAddress.h"
+#include "Callbacks.h"
+#include "Buffer.h"
 
 using namespace std;
 
-// 把之前所有的结构部件整合起来
 class TcpServer {
-    using ConnectionPtr = shared_ptr<Connection>;
-    using ConnectionMap = unordered_map<string, ConnectionPtr>;
-    using ConnectionCallback = function<void(const ConnectionPtr&)>;
-    using CloseCallback = function<void(const ConnectionPtr&)>;
-    using WriteCompleteCallback = function<void(const ConnectionPtr&)>;
-    using MessageCallback = function<void(const ConnectionPtr&, Buffer*, Timestamp)>;
-    using ThreadInitCallback = function<void(EventLoop*)>;
+
 private:
     EventLoop* mainLoop_;  // main loop
     unique_ptr<Acceptor> acceptor_;
@@ -33,9 +28,10 @@ private:
 
     ConnectionMap connections_;   // 保存所有链接
 
-    const string ipPort_;  // ip:port
+    const string ipPort_;  // 服务端ip:port
     const string name_;
 
+    // 这些回调函数都是用户自己设置的，然后依次传入Connection，Channel中，最终在新创建的连接中发生对应事件时被调用
     ConnectionCallback connectionCallback_;
     WriteCompleteCallback writeCompleteCallback_;
     MessageCallback messageCallback_;

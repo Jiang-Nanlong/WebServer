@@ -8,17 +8,19 @@ using namespace std;
 // 封装sockaddr_in
 class InetAddress {
 private:
-    sockaddr_in addr_;
+    struct sockaddr_in addr_;
 public:
     explicit InetAddress(string ip = "127.0.0.1", uint16_t port = 0);
 
     explicit InetAddress(const sockaddr_in& addr) : addr_(addr) {}
 
-    string toIp() const;
+    ~InetAddress() = default;
 
-    string toIpPort() const;
+    const string& getIp() const;
 
-    uint16_t toPort() const;
+    uint16_t getPort() const;
+
+    const string& getIpPort() const;
 
     const sockaddr_in* getSockAddr() const { return &addr_; }
 

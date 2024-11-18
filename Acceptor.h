@@ -8,6 +8,7 @@
 #include "Socket.h"
 #include "Channel.h"
 #include "InetAddress.h"
+#include "Callbacks.h"
 
 using namespace std;
 
@@ -15,7 +16,6 @@ class EventLoop;
 
 // 运行在mainloop，主要用于监听新的客户端连接
 class Acceptor :noncopyable {
-    using NewConnectionCallback = function<void(int sockfd, const InetAddress& addr)>;
 private:
     EventLoop* loop_;  // main loop
     Socket acceptSocket_;   // 主线程上用于监听客户端连接的socket，这个socket要设置成非阻塞的

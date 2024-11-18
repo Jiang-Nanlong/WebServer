@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "noncopyable.h"
+#include "Callbacks.h"
 
 using namespace std;
 
@@ -13,7 +14,6 @@ using namespace std;
 class EventLoop;
 
 class Channel :noncopyable {
-    using EventCallback = function <void()>;
 private:
     int fd_;
     uint32_t events_ = 0;

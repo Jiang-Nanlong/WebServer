@@ -13,6 +13,10 @@ Poller::Poller() :
     }
 }
 
+uint32_t Poller::getChannelNum() const {
+    return channels_.size();
+}
+
 void Poller::updateChannel(Channel* ch) {
     /* if (!hasChannel(ch)) {
         update(ch, EPOLL_CTL_ADD);
