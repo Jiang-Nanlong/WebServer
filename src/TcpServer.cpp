@@ -57,6 +57,7 @@ void TcpServer::start() {
     }
 }
 
+// 根据新链接的sockfd和客户端ip封装一个connection，在acceptor中运行
 void TcpServer::newConnection(int sockfd, const InetAddress& remoteaddr) {
     EventLoop* loop = threadPool_->getNextLoop();
     char buf[64];
@@ -70,8 +71,8 @@ void TcpServer::newConnection(int sockfd, const InetAddress& remoteaddr) {
     if (getsockname(sockfd, (struct sockaddr*)&local, (socklen_t*)&len) < 0)
         LOG(ERROR, "getsockname failed");
     InetAddress localAddr(local);
-    ConnectionPtr conn(new Connection(loop, connName, sockfd, localAddr, remoteaddr));
 
+    ConnectionPtr conn(new Connection(loop, connName, sockfd, localAddr, remoteaddr));
     connections_[connName] = conn;
     conn->setMessageCallback(messageCallback_);
     conn->setWriteCompleteCallback(writeCompleteCallback_);

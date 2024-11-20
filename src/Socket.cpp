@@ -26,7 +26,7 @@ int Socket::Accept(InetAddress& addr) {
     socklen_t len = sizeof(sockaddr_in);
     memset(&temp, 0, sizeof(sockaddr_in));
 
-    int clnt_sock = accept4(sockFd_, (struct sockaddr*)&temp, &len, SOCK_NONBLOCK | SOCK_CLOEXEC);
+    int clnt_sock = accept4(sockFd_, (struct sockaddr*)&temp, &len, SOCK_NONBLOCK | SOCK_CLOEXEC);  // 新链接的sockfd设为非阻塞
     if (clnt_sock < 0) {
         LOG(ERROR, "socket accept failed");
         return -1;

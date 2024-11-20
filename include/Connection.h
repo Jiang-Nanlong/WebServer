@@ -41,6 +41,7 @@ private:
     Buffer inputBuffer_;
     Buffer outputBuffer_;
 
+    // 这些handles只完成基本操作，用户定制的操作可由以上的callbacks实现，这些callback在tcpserver中由用户自己设置
     void handleRead();
     void handleWrite();
     void handleClose();

@@ -6,6 +6,7 @@
 #include <mutex>
 #include <memory>
 #include <sys/eventfd.h>
+#include <atomic>
 
 #include "Log.h"
 #include "noncopyable.h"
@@ -22,6 +23,7 @@ class EventLoop :noncopyable {
 private:
     const std::thread::id threadId_;   // 记录创建EventLoop对象的线程id，Channel上发生的事件只能在自己的eventloop线程中处理
     unique_ptr<Poller> poller_;
+    vector<Channel*> ReadyChannels;
 
     int wakeupFd_;
     unique_ptr<Channel> wakeupChannel_;
@@ -29,10 +31,10 @@ private:
     vector<Functor> pendingFunctors_;
     mutex mtx_;
 
-    bool isLooping_;
-    bool isProcessHandleEvents_;  // 是否正在处理poller返回的vector<Channel*>
-    bool isProcessPendingFunctors_;         // 是否正在处理额外任务
-    bool isQuit_;
+    atomic<bool> isLooping_;
+    atomic<bool> isProcessHandleEvents_;  // 是否正在处理poller返回的vector<Channel*>
+    atomic<bool> isProcessPendingFunctors_;         // 是否正在处理额外任务
+    atomic<bool> isQuit_;
 
     static int createWakeupFd();
 

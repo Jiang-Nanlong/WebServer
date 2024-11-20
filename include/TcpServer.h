@@ -31,7 +31,7 @@ private:
     const string ipPort_;  // 服务端ip:port
     const string name_;
 
-    // 这些回调函数都是用户自己设置的，然后依次传入Connection，Channel中，最终在新创建的连接中发生对应事件时被调用
+    // 这些回调函数都是用户自己设置的，然后依次传入Connection的Channel中，最终在Channel中根据相应的事件进行调用
     ConnectionCallback connectionCallback_;
     WriteCompleteCallback writeCompleteCallback_;
     MessageCallback messageCallback_;

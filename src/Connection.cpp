@@ -114,6 +114,7 @@ void Connection::shutdownInLoop() {
 
 void Connection::connectEstablished() {
     setState(kConnected);
+    // channel_->tie(shared_from_this());  // muduo中有这个但我不太理解有什么用
     channel_->enableReading();
 
     if (connectionCallback_)

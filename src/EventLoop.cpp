@@ -108,7 +108,7 @@ void EventLoop::loop() {
     isQuit_ = false;
     LOG(INFO, "EventLoop start");
     while (!isQuit_) {
-        vector<Channel*> ReadyChannels;
+        ReadyChannels.clear();
         poller_->poll(kPollTimeMs, ReadyChannels);
         isProcessHandleEvents_ = true;
         for (auto& it : ReadyChannels)

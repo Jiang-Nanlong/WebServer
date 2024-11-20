@@ -11,15 +11,13 @@ EventLoopThread::EventLoopThread(const ThreadInitCallback& cb, const string& nam
 }
 
 EventLoopThread::~EventLoopThread() {
-
-
     if (loop_) {
         loop_->quit();
         thread_.join();
     }
 }
 
-// 返回新创建的eventloop对象的指针
+// 启动一个新的eventloop，并返回它的指针
 EventLoop* EventLoopThread::startLoop() {
     thread_.start();  // 通过Thread对象来创建一个eventloop对象，然后开始loop
 
@@ -30,6 +28,7 @@ EventLoop* EventLoopThread::startLoop() {
     return loop_;
 }
 
+// 在新线程中运行这个函数，开启一个新的eventloop
 void EventLoopThread::threadFunc() {
     EventLoop loop;   // 这个eventloop对象在栈上，运行结束会自动释放，不用担心释放的问题
     if (callback_)
