@@ -29,7 +29,23 @@
 
 #include <stdio.h>
 #include <time.h>
-#include <pthread.h>
+#include <thread>
+#include <iostream>
+#include <string>
+#include <cstring>
+
+using namespace std;
+
+
+inline string getFileName(const char* filePath) {
+    const char* fileName = strrchr(filePath, '/');
+    if (fileName) {
+        return string(fileName + 1);
+    }
+    else {
+        return filePath; // 如果没有找到斜杠，直接返回原字符串
+    }
+}
 
 #define INFO 0
 #define DEBUG 1
@@ -39,18 +55,15 @@
 #define LOG(level, format, ...) \
     do { \
         if (level < INFO) break; \
-        time_t t = time(NULL); \
-        struct tm *ltm = localtime(&t); \
-        char time[32] = {0}; \
-        strftime(time, 31, "%H:%M:%S", ltm); \
         switch (level) { \
-        case INFO: fprintf(stdout, "[INFO]: "); break; \
-        case DEBUG: fprintf(stdout, "[DEBUG]: "); break; \
-        case ERROR: fprintf(stdout, "[ERROR]: "); break; \
-        case FATAL: fprintf(stdout, "[FATAL]: "); break; \
+        case INFO:  cout << "[INFO]: "; break; \
+        case DEBUG: cout << "[DEBUG]: "; break; \
+        case ERROR: cout << "[ERROR]: "; break; \
+        case FATAL: cout << "[FATAL]: "; break; \
         } \
-        fprintf(stdout, "[%p %s %s:%d] ", (void*)pthread_self(), time, __FILE__, __LINE__); \
+        cout << "[" << getFileName(__FILE__) << ":" << __LINE__ << "] "; \
+        cout<<std::this_thread::get_id()<<" ";\
         fprintf(stdout, format, ##__VA_ARGS__); \
-        fprintf(stdout, "\n"); \
+        cout << endl; \
         if (level == FATAL) exit(1); \
     } while (0)

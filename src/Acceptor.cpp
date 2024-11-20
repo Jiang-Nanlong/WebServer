@@ -4,7 +4,8 @@
 Acceptor::Acceptor(EventLoop* loop, const InetAddress& addr) :
     loop_(loop),
     acceptSocket_(createNonblockSocket()),
-    acceptChannel_(acceptSocket_.getFd(), loop_)
+    acceptChannel_(acceptSocket_.getFd(), loop_),
+    newConnectionCallback_()
 {
     acceptSocket_.setReuseAddr(true);
     acceptSocket_.setReusePort(true);
@@ -39,7 +40,7 @@ void Acceptor::handleRead() {
     int clintfd = acceptSocket_.Accept(addr);
     if (clintfd > 0) {
         if (newConnectionCallback_)
-            newConnectionCallback_(clintfd, addr);
+            newConnectionCallback_(clintfd, addr);   // 创建一个新的Connection对象
         else
             close(clintfd);
     }

@@ -61,7 +61,10 @@
         "stop_token": "cpp",
         "streambuf": "cpp",
         "typeinfo": "cpp",
-        "cassert": "cpp"
+        "cassert": "cpp",
+        "optional": "cpp",
+        "fstream": "cpp",
+        "sstream": "cpp"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

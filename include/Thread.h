@@ -9,6 +9,7 @@
 
 #include "noncopyable.h"
 #include "Callbacks.h"
+#include "Log.h"
 
 using namespace std;
 

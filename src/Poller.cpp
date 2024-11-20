@@ -57,9 +57,11 @@ void Poller::update(Channel* ch, int op) {
     int ret = epoll_ctl(epollFd_, op, fd, &ev);
     if (ret < 0) {
         if (op == EPOLL_CTL_DEL)
-            LOG(ERROR, "epoll_ctl delete failed");
+            LOG(ERROR, "epoll_ctl del failed");
+        else if (op == EPOLL_CTL_ADD)
+            LOG(ERROR, "epoll_ctl add failed");
         else
-            LOG(FATAL, "epoll_ctl operator failed");
+            LOG(ERROR, "epoll_ctl mod failed");
     }
 }
 
@@ -71,6 +73,7 @@ bool Poller::hasChannel(Channel* ch) {
 // muduo库中这里要返回一个时间戳，在eventloop中要用于channel的handleevent函数，在handleevent函数中主要用于读回调函数
 void Poller::poll(int TimeOuts, vector<Channel*>& ChannelList) {
     int nfds = epoll_wait(epollFd_, &*events_.begin(), static_cast<int>(events_.size()), TimeOuts);
+    cout << std::this_thread::get_id() << " epoll_wait num: " << nfds << endl;
     if (nfds < 0) {
         if (errno == EINTR) {
             LOG(INFO, "epoll wait EINTR");
@@ -80,7 +83,7 @@ void Poller::poll(int TimeOuts, vector<Channel*>& ChannelList) {
         exit(1);
     }
     else if (nfds == 0) {
-        LOG(INFO, "nothing happened");
+        // LOG(INFO, "nothing happened");
     }
     else {
         for (int i = 0;i < nfds;++i) {

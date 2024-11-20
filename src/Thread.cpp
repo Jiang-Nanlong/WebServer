@@ -33,6 +33,7 @@ void Thread::start() {
             threadId_ = std::this_thread::get_id();
             cond_.notify_one();
         }
+        LOG(INFO, "new subreactor");
         func_();  // 之后这里边会创建一个eventloop，然后开始调用loop()
         started_ = false;
         }));

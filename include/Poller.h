@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <unordered_map>
 #include <memory>
+#include <iostream>
 
 #include "Log.h"
 #include "noncopyable.h"

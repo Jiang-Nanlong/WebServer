@@ -18,7 +18,7 @@ void EventLoopThreadPool::start(ThreadInitCallback& cb) {
         string name = name_ + to_string(i);
         EventLoopThread* t = new EventLoopThread(cb, name);
         threads_[i] = unique_ptr<EventLoopThread>(t);
-        loops_[i] = t->startLoop();
+        loops_[i] = threads_[i]->startLoop();
     }
 
     if (threadNum_ == 0 && cb)

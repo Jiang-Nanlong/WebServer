@@ -12,13 +12,19 @@ Connection::Connection(EventLoop* loop,
     state_(kConnecting),
     localAddr_(localaddr),
     remoteAddr_(remoteaddr),
-    highWaterMark_(64 * 1024 * 1024)  // 64M
+    highWaterMark_(64 * 1024 * 1024),  // 64M
+    connectionCallback_(),
+    writeCompleteCallback_(),
+    messageCallback_(),
+    closeCallback_(),
+    highWaterMarkCallback_()
 {
     channel_->setCloseCallback(bind(&Connection::handleClose, this));
     channel_->setReadCallback(bind(&Connection::handleRead, this));
     channel_->setWriteCallback(bind(&Connection::handleWrite, this));
     channel_->setErrorCallback(bind(&Connection::handleError, this));
     socket_->setKeepAlive(true);
+    LOG(INFO, "new connection established");
 }
 
 void Connection::setConnectionCallback(const ConnectionCallback& cb) {
@@ -115,7 +121,9 @@ void Connection::connectEstablished() {
 }
 
 void Connection::connectDestroyed() {
+    LOG(DEBUG, "Connection::connectDestroyed");
     if (state_ == kConnected) {
+        LOG(DEBUG, "Connection::connectDestroyed state_ == kConnected");
         setState(kDisconnected);
         channel_->disableAll();
         connectionCallback_(shared_from_this());
@@ -128,8 +136,10 @@ void Connection::handleRead() {
     int n = inputBuffer_.readFd(channel_->getFd(), &Error);
     if (n > 0)
         messageCallback_(shared_from_this(), &inputBuffer_);
-    else if (n == 0)
+    else if (n == 0) {
+        LOG(DEBUG, "Connection::handleRead n = 0");
         handleClose();
+    }
     else {
         errno = Error;
         LOG(ERROR, "Connection handleRead failed");
@@ -158,6 +168,7 @@ void Connection::handleWrite() {
 }
 
 void Connection::handleClose() {
+    LOG(DEBUG, "Connection::handleClose");
     setState(kDisconnected);
     channel_->disableAll();
 

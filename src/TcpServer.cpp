@@ -8,12 +8,14 @@ EventLoop* CheckLoopNotNull(EventLoop* loop) {
 
 TcpServer::TcpServer(EventLoop* loop, const InetAddress& addr, const string& name) :
     mainLoop_(CheckLoopNotNull(loop)),
-    acceptor_(new Acceptor(mainLoop_, addr)),
+    acceptor_(new Acceptor(loop, addr)),
     name_(name),
     ipPort_(addr.getIpPort()),
-    threadPool_(new EventLoopThreadPool(mainLoop_, name_)),
+    threadPool_(new EventLoopThreadPool(loop, name)),
     connectionCallback_(),
     messageCallback_(),
+    writeCompleteCallback_(),
+    threadInitCallback_(),
     nextConnId_(1),
     started_(0)
 {
@@ -80,10 +82,12 @@ void TcpServer::newConnection(int sockfd, const InetAddress& remoteaddr) {
 }
 
 void TcpServer::removeConnection(const ConnectionPtr& conn) {
+    LOG(DEBUG, "TcpServer::removeConnection");
     mainLoop_->runInLoop(bind(&TcpServer::removeConnectionInLoop, this, conn));
 }
 
 void TcpServer::removeConnectionInLoop(const ConnectionPtr& conn) {
+    LOG(DEBUG, "Tcpserver::removeConnectionInLoop");
     connections_.erase(conn->getName());
     EventLoop* loop = conn->getLoop();
     loop->runInLoop(bind(&Connection::connectDestroyed, conn));
