@@ -17,7 +17,8 @@ TcpServer::TcpServer(EventLoop* loop, const InetAddress& addr, const string& nam
     writeCompleteCallback_(),
     threadInitCallback_(),
     nextConnId_(1),
-    started_(0)
+    started_(0),
+    timerWheel_(new TimerWheel(loop))
 {
     acceptor_->setNewConnectionCallback(bind(&TcpServer::newConnection, this, std::placeholders::_1, std::placeholders::_2));
 }

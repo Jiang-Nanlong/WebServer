@@ -16,6 +16,7 @@
 #include "InetAddress.h"
 #include "Callbacks.h"
 #include "Buffer.h"
+#include "TimerWheel.h"
 
 using namespace std;
 
@@ -27,6 +28,8 @@ private:
     unique_ptr<EventLoopThreadPool> threadPool_;
 
     ConnectionMap connections_;   // 保存所有链接
+
+    TimerPtr timerWheel_;
 
     const string ipPort_;  // 服务端ip:port
     const string name_;

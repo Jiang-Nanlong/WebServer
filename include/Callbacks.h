@@ -7,6 +7,8 @@
 #include <unordered_map>
 
 #include "InetAddress.h"
+#include "TimerTask.h"
+#include "TimerWheel.h"
 
 using namespace std;
 
@@ -42,5 +44,12 @@ using WriteCompleteCallback = function<void(const ConnectionPtr&)>;
 using MessageCallback = function<void(const ConnectionPtr&, Buffer*)>;
 using HighWaterMarkCallback = function < void(const ConnectionPtr&, size_t)>;
 
+// TimerTask.h
+using TaskFunc = function<void()>;
+using ReleaseFunc = function<void(uint64_t)>;
+using TaskPtr = shared_ptr<TimerTask>;
+using TaskWeak = weak_ptr<TimerTask>;
+
 // TcpServer.h
 using ConnectionMap = unordered_map<string, ConnectionPtr>;
+using TimerPtr = unique_ptr<TimerWheel>;
