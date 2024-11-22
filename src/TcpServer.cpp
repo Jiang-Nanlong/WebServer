@@ -75,6 +75,8 @@ void TcpServer::newConnection(int sockfd, const InetAddress& remoteaddr) {
 
     ConnectionPtr conn(new Connection(loop, connName, sockfd, localAddr, remoteaddr));
     connections_[connName] = conn;
+
+    conn->enableTimeoutCheck(timerWheel_.get(), 300);  // 默认五分钟后断开连接
     conn->setMessageCallback(messageCallback_);
     conn->setWriteCompleteCallback(writeCompleteCallback_);
     conn->setConnectionCallback(connectionCallback_);

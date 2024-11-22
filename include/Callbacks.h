@@ -53,3 +53,4 @@ using TaskWeak = weak_ptr<TimerTask>;
 // TcpServer.h
 using ConnectionMap = unordered_map<string, ConnectionPtr>;
 using TimerPtr = unique_ptr<TimerWheel>;
+#define TIMEOUT_SECONDS 300

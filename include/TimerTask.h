@@ -20,7 +20,7 @@ public:
     uint32_t getStartTime() const { return startTime_; }
     uint64_t getTaskId() const { return id_; }
 
-    void Cancel() { isCancel_ = true; }
+    void cancel() { isCancel_ = true; }
 
     ~TimerTask() {
         if (!isCancel_ && taskFunc_) {

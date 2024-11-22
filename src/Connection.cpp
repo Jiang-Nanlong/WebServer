@@ -17,7 +17,10 @@ Connection::Connection(EventLoop* loop,
     writeCompleteCallback_(),
     messageCallback_(),
     closeCallback_(),
-    highWaterMarkCallback_()
+    highWaterMarkCallback_(),
+    timerWheel_(nullptr),
+    timeout_(INT_MAX),
+    timeoutCheckEnabled_(false)
 {
     channel_->setCloseCallback(bind(&Connection::handleClose, this));
     channel_->setReadCallback(bind(&Connection::handleRead, this));
@@ -135,8 +138,10 @@ void Connection::connectDestroyed() {
 void Connection::handleRead() {
     int Error = 0;
     int n = inputBuffer_.readFd(channel_->getFd(), &Error);
-    if (n > 0)
+    if (n > 0) {
+        updatetimeoutTimer();
         messageCallback_(shared_from_this(), &inputBuffer_);
+    }
     else if (n == 0) {
         LOG(DEBUG, "Connection::handleRead n = 0");
         handleClose();
@@ -153,6 +158,7 @@ void Connection::handleWrite() {
         int Error = 0;
         int n = outputBuffer_.writeFd(channel_->getFd(), &Error);
         if (n > 0) {
+            updatetimeoutTimer();
             if (outputBuffer_.readAbleSize() == 0) {  // 输出缓冲区中的数据已经全部写完
                 channel_->disableWriting();
                 if (writeCompleteCallback_)
@@ -172,6 +178,9 @@ void Connection::handleClose() {
     LOG(DEBUG, "Connection::handleClose");
     setState(kDisconnected);
     channel_->disableAll();
+
+    if (timeoutCheckEnabled_)
+        timerWheel_->cancel(socket_->getFd());
 
     if (connectionCallback_)
         connectionCallback_(shared_from_this());

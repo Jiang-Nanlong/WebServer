@@ -25,12 +25,19 @@ TimerWheel::~TimerWheel() {
     timerChannel_.disableAll();
     timerChannel_.remove();
     close(timerFd_);
+
+    for (auto& it : timerTasks_) {
+        TaskPtr tp = it->second.lock();
+        if (tp)
+            tp->cancel();
+    }
 }
 
 void TimerWheel::addTimer(uint64_t id, uint32_t timeout, const TaskFunc& cb) {
     loop_->runInLoop(bind(&TimerWheel::addTimerInLoop, this, id, timeout, cb));
 }
 
+// 添加定时任务的时候即有指针移动，又有任务迁移
 void TimerWheel::addTimerInLoop(uint64_t id, uint32_t timeout, const TaskFunc& cb) {
     lock_guard<mutex> lock(mtx);
     if (timeout < lowCapacity_) {
@@ -52,7 +59,7 @@ void TimerWheel::cancelInLoop(uint64_t id) {
     auto it = timerTasks_.find(id);
     if (it != timerTasks_.end()) {
         TaskPtr tp = it->second.lock();
-        if (tp) tp->Cancel();
+        if (tp) tp->cancel();
     }
 }
 
@@ -108,6 +115,7 @@ void TimerWheel::advanceLowWheel() {
 }
 
 void TimerWheel::advanceMidWheel() {
+    lock_guard<mutex> lock(mtx);
     midTick_ = (midTick_ + 1) % midCapacity_;
     if (midTick_ == 0) {
         advanceHighWheel();
@@ -140,36 +148,33 @@ void TimerWheel::advanceHighWheel() {
     }
 }
 
-
-void TimerWheel::addTimerToLowWheel(uint64_t id, uint32_t timeout, const TaskFunc& cb) {
+TaskPtr TimerWheel::createTask(uint64_t id, uint32_t timeout, const TaskFunc& cb) {
     TaskPtr tp = shared_ptr<TimerTask>(new TimerTask(id, this->getCurrentTime(), timeout, cb));
     timerTasks_[id] = TaskWeak(tp);
     tp->setRelease(bind(&TimerWheel::RemoveTimer, this, id));
 
+    return tp;
+}
+
+void TimerWheel::addTimerToLowWheel(uint64_t id, uint32_t timeout, const TaskFunc& cb) {
+    TaskPtr tp = createTask(id, timeout, cb);
     int pos = (lowTick_ + timeout) % lowCapacity_;
     lowWheel_[pos].push_back(tp);
 }
 
 void TimerWheel::addTimerToMidWheel(uint64_t id, uint32_t timeout, const TaskFunc& cb) {
-    TaskPtr tp = shared_ptr<TimerTask>(new TimerTask(id, this->getCurrentTime(), timeout, cb));
-    timerTasks_[id] = TaskWeak(tp);
-    tp->setRelease(bind(&TimerWheel::RemoveTimer, this, id));
-
+    TaskPtr tp = createTask(id, timeout, cb);
     int minutePos = (midTick_ + timeout / lowCapacity_) % midCapacity_;
     midWheel_[minutePos].push_back(tp);
 }
 
 void TimerWheel::addTimerToHighWheel(uint64_t id, uint32_t timeout, const TaskFunc& cb) {
-    TaskPtr tp = shared_ptr<TimerTask>(new TimerTask(id, this->getCurrentTime(), timeout, cb));
-    timerTasks_[id] = TaskWeak(tp);
-    tp->setRelease(bind(&TimerWheel::RemoveTimer, this, id));
-
+    TaskPtr tp = createTask(id, timeout, cb);
     int hourPos = (highTick_ + timeout / (lowCapacity_ * midCapacity_)) % highCapacity_;
     highWheel_[hourPos].push_back(tp);
 }
 
 void TimerWheel::RemoveTimer(uint64_t id) {
-    lock_guard<mutex> lock(mtx);
     auto it = timerTasks_.find(id);
     if (it != timerTasks_.end()) {
         timerTasks_.erase(it);

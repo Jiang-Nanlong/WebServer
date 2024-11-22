@@ -57,6 +57,8 @@ private:
     void addTimerToHighWheel(uint64_t id, uint32_t timeout, const TaskFunc& cb);
 
     void RemoveTimer(uint64_t id);
+
+    TaskPtr createTask(uint64_t id, uint32_t timeout, const TaskFunc& cb);
 public:
     TimerWheel(EventLoop* loop, int hourcapacity = 24, int minutecapacity = 60, int secondcapacity = 60, int val_sec = 1, int interval_sec = 1);
 
