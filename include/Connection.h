@@ -4,6 +4,7 @@
 #include <memory>
 #include <atomic>
 #include <errno.h>
+#include <limits.h>
 
 #include "noncopyable.h"
 #include "EventLoop.h"
@@ -90,28 +91,9 @@ public:
 
     const InetAddress& getRemoteAddress() const;
 
-    void enableTimeoutCheck(TimerWheel* wheel, int seconds) {
-        timerWheel_ = wheel;
-        timeout_ = seconds;
-        timeoutCheckEnabled_ = true;
-        updatetimeoutTimer();
-    }
+    void enableTimeoutCheck(TimerWheel* wheel, int seconds);
 
-    void disableTimeoutCheck() {
-        if (timeoutCheckEnabled_.exchange(false) && timerWheel_) {
-            timerWheel_->cancel(socket_->getFd());
-        }
-    }
+    void disableTimeoutCheck();
 
-    void updatetimeoutTimer() {
-        if (!timeoutCheckEnabled_ || !timerWheel_) {
-            return;
-        }
-
-        timerWheel_->addTimer(
-            socket_->getFd(),
-            timeout_,
-            bind(&Connection::handleClose, this)
-        );
-    }
+    void updatetimeoutTimer();
 };

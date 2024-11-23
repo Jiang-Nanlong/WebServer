@@ -34,7 +34,7 @@ target_link_libraries(${PROJECT_NAME} Threads::Threads)
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic")
 
 # 如果需要生成调试信息，可以在这里设置
-# set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Debug)
 
 # 如果需要添加特定的编译定义，可以在这里设置
 # add_definitions(-DDEBUG)

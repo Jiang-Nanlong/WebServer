@@ -7,8 +7,6 @@
 #include <unordered_map>
 
 #include "InetAddress.h"
-#include "TimerTask.h"
-#include "TimerWheel.h"
 
 using namespace std;
 
@@ -16,6 +14,8 @@ class Channel;
 class EventLoop;
 class Connection;
 class Buffer;
+class TimerTask;
+class TimerWheel;
 
 // Channel.h
 using EventCallback = function<void()>;

@@ -1,6 +1,6 @@
 #include "TimerWheel.h"
 
-TimerWheel::TimerWheel(EventLoop* loop, int hourcapacity = 24, int minutecapacity = 60, int secondcapacity = 60, int val_sec = 1, int interval_sec = 1) :
+TimerWheel::TimerWheel(EventLoop* loop, int hourcapacity, int minutecapacity, int secondcapacity, int val_sec, int interval_sec) :
     loop_(loop),
     timerFd_(createTimerFd(val_sec, interval_sec)),
     timerChannel_(timerFd_, loop),
@@ -27,7 +27,7 @@ TimerWheel::~TimerWheel() {
     close(timerFd_);
 
     for (auto& it : timerTasks_) {
-        TaskPtr tp = it->second.lock();
+        TaskPtr tp = it.second.lock();
         if (tp)
             tp->cancel();
     }

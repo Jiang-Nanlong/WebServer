@@ -1,4 +1,5 @@
 #include "../include/Connection.h"
+#include "Connection.h"
 
 Connection::Connection(EventLoop* loop,
     const string& name,
@@ -222,3 +223,27 @@ const InetAddress& Connection::getRemoteAddress() const {
     return remoteAddr_;
 }
 
+void Connection::enableTimeoutCheck(TimerWheel* wheel, int seconds) {
+    timerWheel_ = wheel;
+    timeout_ = seconds;
+    timeoutCheckEnabled_ = true;
+    updatetimeoutTimer();
+}
+
+void Connection::disableTimeoutCheck() {
+    if (timeoutCheckEnabled_.exchange(false) && timerWheel_) {
+        timerWheel_->cancel(socket_->getFd());
+    }
+}
+
+void Connection::updatetimeoutTimer() {
+    if (!timeoutCheckEnabled_ || !timerWheel_) {
+        return;
+    }
+
+    timerWheel_->addTimer(
+        socket_->getFd(),
+        timeout_,
+        bind(&Connection::handleClose, this)
+    );
+}
