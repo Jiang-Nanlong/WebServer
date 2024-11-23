@@ -149,11 +149,19 @@ void TimerWheel::advanceHighWheel() {
 }
 
 TaskPtr TimerWheel::createTask(uint64_t id, uint32_t timeout, const TaskFunc& cb) {
-    TaskPtr tp = shared_ptr<TimerTask>(new TimerTask(id, this->getCurrentTime(), timeout, cb));
-    timerTasks_[id] = TaskWeak(tp);
-    tp->setRelease(bind(&TimerWheel::RemoveTimer, this, id));
+    auto it = timerTasks_.find(id);
+    if (it != timerTasks_.end()) {
+        TaskPtr existingTask = it->second.lock();
+        if (existingTask) {
+            return existingTask;
+        }
+    }
 
-    return tp;
+    TaskPtr newTask = make_shared<TimerTask>(id, this->getCurrentTime(), timeout, cb);
+    timerTasks_[id] = TaskWeak(newTask);
+    newTask->setRelease(bind(&TimerWheel::RemoveTimer, this, id));
+
+    return newTask;
 }
 
 void TimerWheel::addTimerToLowWheel(uint64_t id, uint32_t timeout, const TaskFunc& cb) {

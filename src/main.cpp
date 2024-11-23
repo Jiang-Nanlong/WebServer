@@ -11,7 +11,7 @@ public:
     {
         serv.setConnectionCallback(bind(&Server::connectionCallback_, this, std::placeholders::_1));
         serv.setMessageCallback(bind(&Server::readCallback_, this, std::placeholders::_1, std::placeholders::_2));
-        serv.setThreadNum(3);
+        serv.setThreadNum(0);
     }
 
     void start() {
