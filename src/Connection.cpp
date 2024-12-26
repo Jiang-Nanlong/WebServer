@@ -70,7 +70,7 @@ void Connection::sendInLoop(const void* data, size_t len) {
     int remaining = len;
     bool errflag = false;
     if (!channel_->isWriteAble() && outputBuffer_.readAbleSize() == 0) {
-        int wrote = write(channel_->getFd(), data, len);
+        wrote = write(channel_->getFd(), data, len);
         if (wrote >= 0) {
             remaining = len - wrote;
             if (remaining == 0) {
