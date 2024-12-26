@@ -11,7 +11,6 @@
 #include "Acceptor.h"
 #include "EventLoopThreadPool.h"
 #include "Connection.h"
-#include "Timestamp.h"
 #include "Log.h"
 #include "InetAddress.h"
 #include "Callbacks.h"
