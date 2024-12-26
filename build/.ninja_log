@@ -1,0 +1,18 @@
+# ninja log v5
+0	3	0	clean	a31eedcededa8236
+0	164	1735221146642626826	CMakeFiles/WebServer.dir/src/Buffer.cpp.o	cf6967fdcd783cc5
+1	190	1735221146668626495	CMakeFiles/WebServer.dir/src/InetAddress.cpp.o	5ed7e386900ab833
+1	411	1735221146888623690	CMakeFiles/WebServer.dir/src/Socket.cpp.o	3b43123f110176da
+1	462	1735221146940623026	CMakeFiles/WebServer.dir/src/Channel.cpp.o	224fd66c6e10a449
+1	462	1735221146939623039	CMakeFiles/WebServer.dir/src/EventLoopThreadPool.cpp.o	980eb38a70a2482b
+1	611	1735221147088621140	CMakeFiles/WebServer.dir/src/Connection.cpp.o	6de535c763268b72
+1	672	1735221147150620349	CMakeFiles/WebServer.dir/src/EventLoopThread.cpp.o	96dc675631bf4da4
+2	672	1735221147150620349	CMakeFiles/WebServer.dir/src/Thread.cpp.o	b1c6e0899b721be0
+1	675	1735221147152620324	CMakeFiles/WebServer.dir/src/Poller.cpp.o	50630ba5e0e7d9fb
+0	706	1735221147183619929	CMakeFiles/WebServer.dir/src/Acceptor.cpp.o	992c3e83e44cd40c
+2	765	1735221147242619176	CMakeFiles/WebServer_test.dir/src/main.cpp.o	242a7c726f6bf2c4
+1	783	1735221147260618947	CMakeFiles/WebServer.dir/src/EventLoop.cpp.o	4d576c8bf1a93518
+2	793	1735221147270618820	CMakeFiles/WebServer.dir/src/TimerWheel.cpp.o	a2ad70f6e53ac00b
+2	1004	1735221147480616143	CMakeFiles/WebServer.dir/src/TcpServer.cpp.o	3f70190ef7a26499
+1004	1099	1735221147575614932	../lib/libWebServer.so	d0813292f53b241e
+1099	1149	1735221147626614282	WebServer_test	1af6af20267a891f

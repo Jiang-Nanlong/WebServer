@@ -1,0 +1,72 @@
+[
+{
+  "directory": "/home/cml/Documents/webserver/WebServer/build",
+  "command": "/usr/bin/g++ -DWebServer_EXPORTS -I/home/cml/Documents/webserver/WebServer/include -g -fPIC -std=gnu++14 -o CMakeFiles/WebServer.dir/src/Acceptor.cpp.o -c /home/cml/Documents/webserver/WebServer/src/Acceptor.cpp",
+  "file": "/home/cml/Documents/webserver/WebServer/src/Acceptor.cpp"
+},
+{
+  "directory": "/home/cml/Documents/webserver/WebServer/build",
+  "command": "/usr/bin/g++ -DWebServer_EXPORTS -I/home/cml/Documents/webserver/WebServer/include -g -fPIC -std=gnu++14 -o CMakeFiles/WebServer.dir/src/Buffer.cpp.o -c /home/cml/Documents/webserver/WebServer/src/Buffer.cpp",
+  "file": "/home/cml/Documents/webserver/WebServer/src/Buffer.cpp"
+},
+{
+  "directory": "/home/cml/Documents/webserver/WebServer/build",
+  "command": "/usr/bin/g++ -DWebServer_EXPORTS -I/home/cml/Documents/webserver/WebServer/include -g -fPIC -std=gnu++14 -o CMakeFiles/WebServer.dir/src/Channel.cpp.o -c /home/cml/Documents/webserver/WebServer/src/Channel.cpp",
+  "file": "/home/cml/Documents/webserver/WebServer/src/Channel.cpp"
+},
+{
+  "directory": "/home/cml/Documents/webserver/WebServer/build",
+  "command": "/usr/bin/g++ -DWebServer_EXPORTS -I/home/cml/Documents/webserver/WebServer/include -g -fPIC -std=gnu++14 -o CMakeFiles/WebServer.dir/src/Connection.cpp.o -c /home/cml/Documents/webserver/WebServer/src/Connection.cpp",
+  "file": "/home/cml/Documents/webserver/WebServer/src/Connection.cpp"
+},
+{
+  "directory": "/home/cml/Documents/webserver/WebServer/build",
+  "command": "/usr/bin/g++ -DWebServer_EXPORTS -I/home/cml/Documents/webserver/WebServer/include -g -fPIC -std=gnu++14 -o CMakeFiles/WebServer.dir/src/EventLoop.cpp.o -c /home/cml/Documents/webserver/WebServer/src/EventLoop.cpp",
+  "file": "/home/cml/Documents/webserver/WebServer/src/EventLoop.cpp"
+},
+{
+  "directory": "/home/cml/Documents/webserver/WebServer/build",
+  "command": "/usr/bin/g++ -DWebServer_EXPORTS -I/home/cml/Documents/webserver/WebServer/include -g -fPIC -std=gnu++14 -o CMakeFiles/WebServer.dir/src/EventLoopThread.cpp.o -c /home/cml/Documents/webserver/WebServer/src/EventLoopThread.cpp",
+  "file": "/home/cml/Documents/webserver/WebServer/src/EventLoopThread.cpp"
+},
+{
+  "directory": "/home/cml/Documents/webserver/WebServer/build",
+  "command": "/usr/bin/g++ -DWebServer_EXPORTS -I/home/cml/Documents/webserver/WebServer/include -g -fPIC -std=gnu++14 -o CMakeFiles/WebServer.dir/src/EventLoopThreadPool.cpp.o -c /home/cml/Documents/webserver/WebServer/src/EventLoopThreadPool.cpp",
+  "file": "/home/cml/Documents/webserver/WebServer/src/EventLoopThreadPool.cpp"
+},
+{
+  "directory": "/home/cml/Documents/webserver/WebServer/build",
+  "command": "/usr/bin/g++ -DWebServer_EXPORTS -I/home/cml/Documents/webserver/WebServer/include -g -fPIC -std=gnu++14 -o CMakeFiles/WebServer.dir/src/InetAddress.cpp.o -c /home/cml/Documents/webserver/WebServer/src/InetAddress.cpp",
+  "file": "/home/cml/Documents/webserver/WebServer/src/InetAddress.cpp"
+},
+{
+  "directory": "/home/cml/Documents/webserver/WebServer/build",
+  "command": "/usr/bin/g++ -DWebServer_EXPORTS -I/home/cml/Documents/webserver/WebServer/include -g -fPIC -std=gnu++14 -o CMakeFiles/WebServer.dir/src/Poller.cpp.o -c /home/cml/Documents/webserver/WebServer/src/Poller.cpp",
+  "file": "/home/cml/Documents/webserver/WebServer/src/Poller.cpp"
+},
+{
+  "directory": "/home/cml/Documents/webserver/WebServer/build",
+  "command": "/usr/bin/g++ -DWebServer_EXPORTS -I/home/cml/Documents/webserver/WebServer/include -g -fPIC -std=gnu++14 -o CMakeFiles/WebServer.dir/src/Socket.cpp.o -c /home/cml/Documents/webserver/WebServer/src/Socket.cpp",
+  "file": "/home/cml/Documents/webserver/WebServer/src/Socket.cpp"
+},
+{
+  "directory": "/home/cml/Documents/webserver/WebServer/build",
+  "command": "/usr/bin/g++ -DWebServer_EXPORTS -I/home/cml/Documents/webserver/WebServer/include -g -fPIC -std=gnu++14 -o CMakeFiles/WebServer.dir/src/TcpServer.cpp.o -c /home/cml/Documents/webserver/WebServer/src/TcpServer.cpp",
+  "file": "/home/cml/Documents/webserver/WebServer/src/TcpServer.cpp"
+},
+{
+  "directory": "/home/cml/Documents/webserver/WebServer/build",
+  "command": "/usr/bin/g++ -DWebServer_EXPORTS -I/home/cml/Documents/webserver/WebServer/include -g -fPIC -std=gnu++14 -o CMakeFiles/WebServer.dir/src/Thread.cpp.o -c /home/cml/Documents/webserver/WebServer/src/Thread.cpp",
+  "file": "/home/cml/Documents/webserver/WebServer/src/Thread.cpp"
+},
+{
+  "directory": "/home/cml/Documents/webserver/WebServer/build",
+  "command": "/usr/bin/g++ -DWebServer_EXPORTS -I/home/cml/Documents/webserver/WebServer/include -g -fPIC -std=gnu++14 -o CMakeFiles/WebServer.dir/src/TimerWheel.cpp.o -c /home/cml/Documents/webserver/WebServer/src/TimerWheel.cpp",
+  "file": "/home/cml/Documents/webserver/WebServer/src/TimerWheel.cpp"
+},
+{
+  "directory": "/home/cml/Documents/webserver/WebServer/build",
+  "command": "/usr/bin/g++ -I/home/cml/Documents/webserver/WebServer/include -g -std=gnu++14 -o CMakeFiles/WebServer_test.dir/src/main.cpp.o -c /home/cml/Documents/webserver/WebServer/src/main.cpp",
+  "file": "/home/cml/Documents/webserver/WebServer/src/main.cpp"
+}
+]
