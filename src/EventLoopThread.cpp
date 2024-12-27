@@ -1,5 +1,4 @@
 #include "../include/EventLoopThread.h"
-#include "EventLoopThread.h"
 
 EventLoopThread::EventLoopThread(const ThreadInitCallback& cb, const string& name) :
     loop_(nullptr),

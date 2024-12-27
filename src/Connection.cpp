@@ -1,5 +1,4 @@
 #include "../include/Connection.h"
-#include "Connection.h"
 
 Connection::Connection(EventLoop* loop,
     const string& name,
